@@ -16,6 +16,6 @@ export class AppController {
   @Public()
   @Get('meta')
   meta() {
-    return { name: APP_NAME, phase: 2 };
+    return { name: APP_NAME, phase: 3 };
   }
 }

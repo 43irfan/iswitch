@@ -27,34 +27,65 @@ enum AccountStatus {
   SUSPENDED
 }
 
+enum SyncStatus {
+  PENDING
+  SYNCED
+  ERROR
+  SKIPPED
+}
+
+enum DidDestinationType {
+  EXTENSION
+  RING_GROUP
+  QUEUE
+  IVR
+  EXTERNAL
+  VOICEMAIL
+}
+
+enum RingStrategy {
+  RINGALL
+  LEASTRECENT
+  FEWESTCALLS
+  RANDOM
+  RRMEMORY
+}
+
 model Account {
-  id        String        @id @default(cuid())
-  name      String
-  type      AccountType
-  status    AccountStatus @default(ACTIVE)
-  parentId  String?
-  parent    Account?      @relation("AccountTree", fields: [parentId], references: [id])
-  children  Account[]     @relation("AccountTree")
-  users     User[]
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id          String        @id @default(cuid())
+  name        String
+  type        AccountType
+  status      AccountStatus @default(ACTIVE)
+  parentId    String?
+  parent      Account?      @relation("AccountTree", fields: [parentId], references: [id])
+  children    Account[]     @relation("AccountTree")
+  users       User[]
+  extensions  Extension[]
+  dids        Did[]
+  ringGroups  RingGroup[]
+  queues      CallQueue[]
+  ivrMenus    IvrMenu[]
+  voicemails  VoicemailBox[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   @@index([parentId])
   @@index([type])
 }
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
+  id           String      @id @default(cuid())
+  email        String      @unique
   passwordHash String
   name         String?
   role         UserRole
   accountId    String
-  account      Account   @relation(fields: [accountId], references: [id])
-  isActive     Boolean   @default(true)
+  account      Account     @relation(fields: [accountId], references: [id])
+  isActive     Boolean     @default(true)
   sessions     Session[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  extensions   Extension[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 
   @@index([accountId])
   @@index([role])
@@ -70,4 +101,160 @@ model Session {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+model Extension {
+  id               String           @id @default(cuid())
+  accountId        String
+  account          Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  number           String
+  displayName      String?
+  sipUsername      String
+  sipPassword      String
+  callerId         String?
+  dnd              Boolean          @default(false)
+  forwardTo        String?
+  voicemailEnabled Boolean          @default(true)
+  userId           String?
+  user             User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  voicemailBox     VoicemailBox?
+  ringGroupMembers RingGroupMember[]
+  queueMembers     QueueMember[]
+  syncStatus       SyncStatus       @default(PENDING)
+  syncError        String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@unique([accountId, number])
+  @@unique([accountId, sipUsername])
+  @@index([accountId])
+  @@index([userId])
+}
+
+model Did {
+  id              String             @id @default(cuid())
+  accountId       String
+  account         Account            @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  number          String
+  description     String?
+  destinationType DidDestinationType
+  /// Target id for EXTENSION / RING_GROUP / QUEUE / IVR / VOICEMAIL, or external number string
+  destinationRef  String
+  callerIdName    String?
+  enabled         Boolean            @default(true)
+  syncStatus      SyncStatus         @default(PENDING)
+  syncError       String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@unique([number])
+  @@index([accountId])
+}
+
+model RingGroup {
+  id         String            @id @default(cuid())
+  accountId  String
+  account    Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name       String
+  strategy   RingStrategy      @default(RINGALL)
+  ringTimeout Int              @default(20)
+  members    RingGroupMember[]
+  syncStatus SyncStatus        @default(PENDING)
+  syncError  String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@unique([accountId, name])
+  @@index([accountId])
+}
+
+model RingGroupMember {
+  id          String    @id @default(cuid())
+  ringGroupId String
+  ringGroup   RingGroup @relation(fields: [ringGroupId], references: [id], onDelete: Cascade)
+  extensionId String
+  extension   Extension @relation(fields: [extensionId], references: [id], onDelete: Cascade)
+  priority    Int       @default(1)
+
+  @@unique([ringGroupId, extensionId])
+}
+
+model CallQueue {
+  id          String        @id @default(cuid())
+  accountId   String
+  account     Account       @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name        String
+  extension   String?
+  strategy    RingStrategy  @default(RINGALL)
+  timeout     Int           @default(30)
+  musicOnHold String        @default("default")
+  members     QueueMember[]
+  syncStatus  SyncStatus    @default(PENDING)
+  syncError   String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([accountId, name])
+  @@index([accountId])
+}
+
+model QueueMember {
+  id         String    @id @default(cuid())
+  queueId    String
+  queue      CallQueue @relation(fields: [queueId], references: [id], onDelete: Cascade)
+  extensionId String
+  extension  Extension @relation(fields: [extensionId], references: [id], onDelete: Cascade)
+  penalty    Int       @default(0)
+
+  @@unique([queueId, extensionId])
+}
+
+model IvrMenu {
+  id             String     @id @default(cuid())
+  accountId      String
+  account        Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name           String
+  greetingPrompt String     @default("welcome")
+  timeoutSeconds Int        @default(5)
+  /// Digits map: { "1": { "type": "EXTENSION", "ref": "..." }, ... }
+  options        Json       @default("{}")
+  syncStatus     SyncStatus @default(PENDING)
+  syncError      String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@unique([accountId, name])
+  @@index([accountId])
+}
+
+model VoicemailBox {
+  id          String     @id @default(cuid())
+  accountId   String
+  account     Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  mailbox     String
+  pin         String     @default("0000")
+  email       String?
+  extensionId String?    @unique
+  extension   Extension? @relation(fields: [extensionId], references: [id], onDelete: SetNull)
+  syncStatus  SyncStatus @default(PENDING)
+  syncError   String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@unique([accountId, mailbox])
+  @@index([accountId])
+}
+
+model SyncAudit {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  action     String
+  status     String
+  message    String?
+  payload    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
 }

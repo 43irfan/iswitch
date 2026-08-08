@@ -35,6 +35,9 @@ export class PortalController {
           ...common,
           { href: '/portal/retail/extensions', label: 'Extensions' },
           { href: '/portal/retail/dids', label: 'DIDs' },
+          { href: '/portal/retail/ring-groups', label: 'Ring groups' },
+          { href: '/portal/retail/queues', label: 'Queues' },
+          { href: '/portal/retail/ivr', label: 'IVR' },
         ];
       case 'WHOLESALE_CUSTOMER':
         return [
