@@ -44,44 +44,53 @@ export function CreateDidForm({
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="mt-6 grid gap-3 rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 sm:grid-cols-2"
-    >
-      <input
-        placeholder="DID number e.g. +1555…"
-        value={number}
-        onChange={(e) => setNumber(e.target.value)}
-        className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
-        required
-      />
-      <input
-        placeholder="Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
-      />
-      <select
-        value={destinationRef}
-        onChange={(e) => setDestinationRef(e.target.value)}
-        className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
-        required
-      >
-        {extensions.map((ext) => (
-          <option key={ext.id} value={ext.id}>
-            Ext {ext.number}
-            {ext.displayName ? ` — ${ext.displayName}` : ''}
-          </option>
-        ))}
-      </select>
-      <button
-        type="submit"
-        disabled={loading || extensions.length === 0}
-        className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-emerald-400 disabled:opacity-60"
-      >
-        {loading ? 'Adding…' : 'Add DID → extension'}
-      </button>
-      {error ? <p className="sm:col-span-2 text-sm text-rose-400">{error}</p> : null}
+    <form onSubmit={onSubmit} className="panel mt-6 grid gap-3 p-4 sm:grid-cols-2">
+      <div className="field">
+        <label htmlFor="did-number">DID number</label>
+        <input
+          id="did-number"
+          placeholder="+1555…"
+          value={number}
+          onChange={(e) => setNumber(e.target.value)}
+          required
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="did-desc">Description</label>
+        <input
+          id="did-desc"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="did-dest">Route to extension</label>
+        <select
+          id="did-dest"
+          value={destinationRef}
+          onChange={(e) => setDestinationRef(e.target.value)}
+          required
+        >
+          {extensions.map((ext) => (
+            <option key={ext.id} value={ext.id}>
+              Ext {ext.number}
+              {ext.displayName ? ` — ${ext.displayName}` : ''}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="flex items-end">
+        <button
+          type="submit"
+          disabled={loading || extensions.length === 0}
+          className="btn-primary w-full"
+        >
+          {loading ? 'Adding…' : 'Add DID → extension'}
+        </button>
+      </div>
+      {error ? (
+        <p className="sm:col-span-2 text-sm text-[var(--danger)]">{error}</p>
+      ) : null}
     </form>
   );
 }

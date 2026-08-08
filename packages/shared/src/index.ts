@@ -232,9 +232,12 @@ export function canPlaceCall(opts: {
 }
 
 export const healthResponseSchema = z.object({
-  status: z.literal('ok'),
+  status: z.enum(['ok', 'degraded']),
   service: z.string(),
   timestamp: z.string(),
+  database: z.string().optional(),
+  redis: z.string().optional(),
+  phase: z.number().optional(),
 });
 
 export type HealthResponse = z.infer<typeof healthResponseSchema>;

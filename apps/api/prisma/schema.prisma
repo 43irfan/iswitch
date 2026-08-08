@@ -417,3 +417,33 @@ model BalanceLedger {
 
   @@index([accountId, createdAt])
 }
+
+/// Block outbound prefixes (account-scoped or global when accountId is "")
+model DestinationBlock {
+  id        String   @id @default(cuid())
+  accountId String   @default("")
+  prefix    String
+  reason    String?
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([accountId, prefix])
+  @@index([prefix])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  actorEmail  String?
+  action      String
+  entityType  String?
+  entityId    String?
+  ip          String?
+  meta        Json?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([actorUserId])
+  @@index([action])
+}

@@ -1,5 +1,4 @@
-import { Get } from '@nestjs/common';
-import { Controller } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { HealthService } from './health.service';
 import { Public } from '../auth/decorators/public.decorator';
 
@@ -11,5 +10,11 @@ export class HealthController {
   @Get()
   check() {
     return this.healthService.check();
+  }
+
+  @Public()
+  @Get('live')
+  live() {
+    return this.healthService.live();
   }
 }

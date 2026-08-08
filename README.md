@@ -40,16 +40,28 @@ pnpm dev
 
 Demo logins (password `Password123!`):
 `admin@iswitch.local`, `reseller@iswitch.local`, `retail@iswitch.local`, `wholesale@iswitch.local`, `user@iswitch.local`
+
 ## Workspace layout
 
 ```text
-apps/api          NestJS API + Prisma + workers stubs
+apps/api          NestJS API + Prisma + workers
 apps/web          Next.js portals
 packages/shared   Shared Zod schemas / constants
 Plan.md           Living product plan (not code docs)
 ```
 
-## Phase
+## Phase status
 
-**Phase 1 — Foundation** (current): runnable shell.  
-Auth, retail PBX, wholesale, and billing come in later phases (see `Plan.md`).
+**Phase 6 — Hardening** (current): audit log, destination fraud blocks, health/readiness, login rate limits, sync retry/error handling, admin ops UI.
+
+Earlier: foundation → auth/tenancy → retail PBX → wholesale → billing (see `Plan.md`).
+
+### Useful endpoints
+
+| Path | Notes |
+|------|--------|
+| `GET /health` | DB + Redis check |
+| `GET /health/live` | Liveness only |
+| `GET /ops/ready` | Readiness (public) |
+| `GET /ops/overview` | Admin ops dashboard data |
+| `POST /billing/cdrs/ingest` | CDR ingest (`X-CDR-Token` / `CDR_INGEST_TOKEN`) |

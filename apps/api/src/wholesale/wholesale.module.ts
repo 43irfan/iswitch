@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AccountsModule } from '../tenancy/accounts.module';
 import { JobsModule } from '../jobs/jobs.module';
+import { OpsModule } from '../ops/ops.module';
 import { WholesaleController } from './wholesale.controller';
 import {
   CarrierTrunksService,
@@ -11,7 +12,7 @@ import {
 } from './wholesale.service';
 
 @Module({
-  imports: [AccountsModule, JobsModule],
+  imports: [AccountsModule, JobsModule, OpsModule],
   controllers: [WholesaleController],
   providers: [
     WholesaleAccessService,

@@ -35,30 +35,32 @@ export function CreateExtensionForm() {
   return (
     <form
       onSubmit={onSubmit}
-      className="mt-6 grid gap-3 rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 sm:grid-cols-[1fr_1fr_auto]"
+      className="panel mt-6 grid gap-3 p-4 sm:grid-cols-[1fr_1fr_auto]"
     >
-      <input
-        placeholder="Extension number"
-        value={number}
-        onChange={(e) => setNumber(e.target.value)}
-        className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
-        required
-      />
-      <input
-        placeholder="Display name"
-        value={displayName}
-        onChange={(e) => setDisplayName(e.target.value)}
-        className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
-      />
-      <button
-        type="submit"
-        disabled={loading}
-        className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-emerald-400 disabled:opacity-60"
-      >
-        {loading ? 'Adding…' : 'Add extension'}
-      </button>
+      <div className="field">
+        <label htmlFor="ext-number">Extension</label>
+        <input
+          id="ext-number"
+          value={number}
+          onChange={(e) => setNumber(e.target.value)}
+          required
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="ext-name">Display name</label>
+        <input
+          id="ext-name"
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+        />
+      </div>
+      <div className="flex items-end">
+        <button type="submit" disabled={loading} className="btn-primary w-full">
+          {loading ? 'Adding…' : 'Add extension'}
+        </button>
+      </div>
       {error ? (
-        <p className="sm:col-span-3 text-sm text-rose-400">{error}</p>
+        <p className="sm:col-span-3 text-sm text-[var(--danger)]">{error}</p>
       ) : null}
     </form>
   );

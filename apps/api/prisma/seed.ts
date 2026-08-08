@@ -7,6 +7,8 @@ async function main() {
   const passwordHash = await bcrypt.hash('Password123!', 10);
 
   await prisma.syncAudit.deleteMany();
+  await prisma.auditLog.deleteMany();
+  await prisma.destinationBlock.deleteMany();
   await prisma.balanceLedger.deleteMany();
   await prisma.cdr.deleteMany();
   await prisma.routePrefix.deleteMany();
@@ -318,8 +320,30 @@ async function main() {
     },
   });
 
+  await prisma.destinationBlock.createMany({
+    data: [
+      {
+        accountId: '',
+        prefix: '1900',
+        reason: 'Premium-rate block (global)',
+      },
+      {
+        accountId: '',
+        prefix: '1970',
+        reason: 'High-risk prefix (global)',
+      },
+      {
+        accountId: wholesale.id,
+        prefix: '44',
+        reason: 'Demo account UK block',
+      },
+    ],
+  });
+
   // eslint-disable-next-line no-console
-  console.log('Seeded Phase 5 billing + wholesale/retail demo. Password: Password123!');
+  console.log(
+    'Seeded Phase 6 ops + billing/wholesale/retail demo. Password: Password123!',
+  );
 }
 
 main()

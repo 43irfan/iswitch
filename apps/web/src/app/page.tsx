@@ -8,23 +8,27 @@ export default async function HomePage() {
   if (user) redirect(ROLE_PORTAL_PATH[user.role]);
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-16">
-        <p className="text-sm uppercase tracking-[0.2em] text-emerald-400">
-          Phase 5 · Billing
+    <main className="atmosphere relative min-h-screen">
+      <div className="mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-6 py-16 sm:px-10">
+        <div className="fade-up">
+          <p className="brand-mark text-[clamp(3.4rem,12vw,7.5rem)] text-[var(--ink)]">
+            {APP_NAME}
+          </p>
+          <div className="mt-5 signal-line" />
+        </div>
+
+        <p className="fade-up-delay mt-8 max-w-xl text-lg leading-relaxed text-[var(--ink-soft)] sm:text-xl">
+          One control plane for hosted PBX and wholesale SIP — rated, audited,
+          and synced to Asterisk.
         </p>
-        <h1 className="mt-4 text-5xl font-semibold tracking-tight">{APP_NAME}</h1>
-        <p className="mt-4 max-w-xl text-lg text-zinc-400">
-          Rated CDRs, prefix rates, and prepaid balance debits — retail and
-          wholesale on one platform.
-        </p>
-        <div className="mt-10">
-          <Link
-            href="/login"
-            className="inline-flex rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-medium text-zinc-950 hover:bg-emerald-400"
-          >
-            Sign in
+
+        <div className="fade-up-delay-2 mt-10 flex flex-wrap items-center gap-3">
+          <Link href="/login" className="btn-primary">
+            Enter portal
           </Link>
+          <span className="text-sm text-[var(--ink-faint)]">
+            Phase 6 · Hardened ops baseline
+          </span>
         </div>
       </div>
     </main>

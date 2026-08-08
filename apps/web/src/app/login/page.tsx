@@ -1,7 +1,6 @@
-import { APP_NAME } from '@iswitch/shared';
+import { APP_NAME, ROLE_PORTAL_PATH } from '@iswitch/shared';
 import { LoginForm } from '@/components/login-form';
 import { getSessionUser } from '@/lib/session';
-import { ROLE_PORTAL_PATH } from '@iswitch/shared';
 import { redirect } from 'next/navigation';
 
 export default async function LoginPage() {
@@ -9,26 +8,43 @@ export default async function LoginPage() {
   if (user) redirect(ROLE_PORTAL_PATH[user.role]);
 
   return (
-    <main className="min-h-screen bg-zinc-950 text-zinc-100">
-      <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-16">
-        <p className="text-sm uppercase tracking-[0.2em] text-emerald-400">
-          {APP_NAME}
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight">Sign in</h1>
-        <p className="mt-2 text-sm text-zinc-400">
-          Phase 2 — role-based portals and tenant-scoped access.
-        </p>
-        <LoginForm />
-        <div className="mt-8 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 text-xs text-zinc-500">
-          <p className="font-medium text-zinc-400">Demo accounts</p>
-          <ul className="mt-2 space-y-1">
-            <li>admin@iswitch.local</li>
-            <li>reseller@iswitch.local</li>
-            <li>retail@iswitch.local</li>
-            <li>wholesale@iswitch.local</li>
-            <li>user@iswitch.local</li>
-          </ul>
-        </div>
+    <main className="atmosphere min-h-screen">
+      <div className="mx-auto grid min-h-screen max-w-6xl lg:grid-cols-[1.1fr_0.9fr]">
+        <section className="flex flex-col justify-center px-6 py-14 sm:px-10 lg:px-14">
+          <div className="fade-up">
+            <p className="brand-mark text-[clamp(2.8rem,8vw,5.5rem)] text-[var(--ink)]">
+              {APP_NAME}
+            </p>
+            <div className="mt-4 signal-line" />
+            <p className="mt-6 max-w-md text-base leading-relaxed text-[var(--ink-soft)] sm:text-lg">
+              Sign in to route, rate, and operate retail and wholesale traffic
+              from a single source of truth.
+            </p>
+          </div>
+        </section>
+
+        <section className="flex items-center px-6 py-10 sm:px-10 lg:pr-14">
+          <div className="panel w-full max-w-md p-6 sm:p-8 fade-up-delay">
+            <p className="page-kicker">Secure access</p>
+            <h1 className="page-title mt-2">Sign in</h1>
+            <p className="page-lede">
+              Session cookie auth with role-scoped portals.
+            </p>
+            <LoginForm />
+            <div className="mt-8 border-t border-[var(--line)] pt-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--ink-faint)]">
+                Demo accounts
+              </p>
+              <ul className="mt-3 space-y-1.5 font-mono text-xs text-[var(--ink-soft)]">
+                <li>admin@iswitch.local</li>
+                <li>reseller@iswitch.local</li>
+                <li>retail@iswitch.local</li>
+                <li>wholesale@iswitch.local</li>
+                <li>user@iswitch.local</li>
+              </ul>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );

@@ -23,71 +23,85 @@ export class SyncProcessor extends WorkerHost {
       `Asterisk sync job=${job.id} ${action} ${entityType}/${entityId}`,
     );
 
-    // Phase 3: queue + audit only. Real ARI/Realtime apply comes when Asterisk is wired.
-    const status = this.asterisk.getConfigStatus();
-    const message = status.connected
-      ? 'Applied to Asterisk'
-      : 'Queued locally — Asterisk not connected (stub sync OK)';
+    try {
+      // Phase 3–6: queue + audit. Real ARI/Realtime apply when Asterisk is wired.
+      const status = this.asterisk.getConfigStatus();
+      const message = status.connected
+        ? 'Applied to Asterisk'
+        : 'Queued locally — Asterisk not connected (stub sync OK)';
 
-    await this.prisma.syncAudit.create({
-      data: {
+      await this.prisma.syncAudit.create({
+        data: {
+          entityType,
+          entityId,
+          action,
+          status: status.connected ? 'synced' : 'stubbed',
+          message,
+          payload: job.data as object,
+        },
+      });
+
+      await this.markEntitySync(
         entityType,
         entityId,
         action,
-        status: status.connected ? 'synced' : 'stubbed',
+        status.connected ? 'SYNCED' : 'PENDING',
+        status.connected ? null : 'Asterisk offline — pending sync',
+      );
+
+      return { ok: true, message, processedAt: new Date().toISOString() };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Sync failed';
+      this.logger.error(`Sync failed job=${job.id}: ${message}`);
+
+      await this.prisma.syncAudit.create({
+        data: {
+          entityType,
+          entityId,
+          action,
+          status: 'error',
+          message,
+          payload: job.data as object,
+        },
+      });
+
+      await this.markEntitySync(
+        entityType,
+        entityId,
+        action,
+        'ERROR',
         message,
-        payload: job.data as object,
-      },
-    });
+      );
 
-    if (entityType === 'extension' && entityId !== 'probe' && action !== 'delete') {
-      await this.prisma.extension.updateMany({
-        where: { id: entityId },
-        data: {
-          syncStatus: status.connected ? 'SYNCED' : 'PENDING',
-          syncError: status.connected ? null : 'Asterisk offline — pending sync',
-        },
-      });
+      throw err;
     }
+  }
 
-    if (entityType === 'did' && entityId !== 'probe' && action !== 'delete') {
-      await this.prisma.did.updateMany({
-        where: { id: entityId },
-        data: {
-          syncStatus: status.connected ? 'SYNCED' : 'PENDING',
-          syncError: status.connected ? null : 'Asterisk offline — pending sync',
-        },
-      });
-    }
+  private async markEntitySync(
+    entityType: string,
+    entityId: string,
+    action: string,
+    syncStatus: 'SYNCED' | 'PENDING' | 'ERROR',
+    syncError: string | null,
+  ) {
+    if (entityId === 'probe' || action === 'delete') return;
 
-    if (
-      entityType === 'customer_trunk' &&
-      entityId !== 'probe' &&
-      action !== 'delete'
-    ) {
+    const data = { syncStatus, syncError };
+
+    if (entityType === 'extension') {
+      await this.prisma.extension.updateMany({ where: { id: entityId }, data });
+    } else if (entityType === 'did') {
+      await this.prisma.did.updateMany({ where: { id: entityId }, data });
+    } else if (entityType === 'customer_trunk') {
       await this.prisma.customerTrunk.updateMany({
         where: { id: entityId },
-        data: {
-          syncStatus: status.connected ? 'SYNCED' : 'PENDING',
-          syncError: status.connected ? null : 'Asterisk offline — pending sync',
-        },
+        data,
       });
-    }
-
-    if (
-      entityType === 'carrier_trunk' &&
-      entityId !== 'probe' &&
-      action !== 'delete'
-    ) {
+    } else if (entityType === 'carrier_trunk') {
       await this.prisma.carrierTrunk.updateMany({
         where: { id: entityId },
-        data: {
-          syncStatus: status.connected ? 'SYNCED' : 'PENDING',
-          syncError: status.connected ? null : 'Asterisk offline — pending sync',
-        },
+        data,
       });
     }
-
-    return { ok: true, message, processedAt: new Date().toISOString() };
   }
 }

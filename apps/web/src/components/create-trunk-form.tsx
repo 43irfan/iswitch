@@ -41,43 +41,47 @@ export function CreateTrunkForm() {
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="mt-6 grid gap-3 rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 sm:grid-cols-2"
-    >
-      <input
-        placeholder="Trunk name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
-        required
-      />
-      <input
-        placeholder="IP ACL (comma-separated, optional)"
-        value={ipAcl}
-        onChange={(e) => setIpAcl(e.target.value)}
-        className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
-      />
-      <input
-        placeholder="Max channels"
-        value={maxChannels}
-        onChange={(e) => setMaxChannels(e.target.value)}
-        className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
-      />
-      <input
-        placeholder="Max CPS"
-        value={maxCps}
-        onChange={(e) => setMaxCps(e.target.value)}
-        className="rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm"
-      />
-      <button
-        type="submit"
-        disabled={loading}
-        className="sm:col-span-2 rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-zinc-950 hover:bg-emerald-400 disabled:opacity-60"
-      >
+    <form onSubmit={onSubmit} className="panel mt-6 grid gap-3 p-4 sm:grid-cols-2">
+      <div className="field">
+        <label htmlFor="trunk-name">Trunk name</label>
+        <input
+          id="trunk-name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="ip-acl">IP ACL</label>
+        <input
+          id="ip-acl"
+          placeholder="Comma-separated, optional"
+          value={ipAcl}
+          onChange={(e) => setIpAcl(e.target.value)}
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="max-ch">Max channels</label>
+        <input
+          id="max-ch"
+          value={maxChannels}
+          onChange={(e) => setMaxChannels(e.target.value)}
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="max-cps">Max CPS</label>
+        <input
+          id="max-cps"
+          value={maxCps}
+          onChange={(e) => setMaxCps(e.target.value)}
+        />
+      </div>
+      <button type="submit" disabled={loading} className="btn-primary sm:col-span-2">
         {loading ? 'Creating…' : 'Create SIP trunk'}
       </button>
-      {error ? <p className="sm:col-span-2 text-sm text-rose-400">{error}</p> : null}
+      {error ? (
+        <p className="sm:col-span-2 text-sm text-[var(--danger)]">{error}</p>
+      ) : null}
     </form>
   );
 }

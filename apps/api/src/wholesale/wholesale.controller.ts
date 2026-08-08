@@ -149,8 +149,9 @@ export class WholesaleController {
   creditCheck(
     @CurrentUser() user: SessionUser,
     @Query('accountId') accountId?: string,
+    @Query('destination') destination?: string,
   ) {
-    return this.billing.creditCheck(user, accountId);
+    return this.billing.creditCheck(user, accountId, destination);
   }
 
   @Roles(...OPERATOR_ROLES)

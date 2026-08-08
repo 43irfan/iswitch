@@ -10,6 +10,7 @@ import { UserRole, canPlaceCall } from '@iswitch/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { TenancyService } from '../tenancy/tenancy.service';
 import { JobsService } from '../jobs/jobs.service';
+import { FraudService } from '../ops/fraud.service';
 
 function toBigInt(value: number | string | bigint | undefined, fallback = 0n) {
   if (value === undefined || value === null) return fallback;
@@ -404,6 +405,7 @@ export class WholesaleBillingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly access: WholesaleAccessService,
+    private readonly fraud: FraudService,
   ) {}
 
   async getAccountBilling(user: SessionUser, accountId?: string) {
@@ -506,8 +508,25 @@ export class WholesaleBillingService {
     };
   }
 
-  /** Auth hook for dialplan/ARI — check wholesale account can place a call. */
-  async creditCheck(user: SessionUser, accountId?: string) {
-    return this.getAccountBilling(user, accountId);
+  /** Auth hook for dialplan/ARI — credit + optional destination fraud gate. */
+  async creditCheck(
+    user: SessionUser,
+    accountId?: string,
+    destination?: string,
+  ) {
+    const billing = await this.getAccountBilling(user, accountId);
+    if (!destination) return billing;
+
+    const gate = await this.fraud.checkCall({
+      accountId: billing.id,
+      destination,
+    });
+    return {
+      ...billing,
+      callCheck: gate,
+      creditCheck: gate.allowed
+        ? billing.creditCheck
+        : { allowed: false, reason: gate.reason },
+    };
   }
 }
