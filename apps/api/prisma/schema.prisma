@@ -80,10 +80,14 @@ model Account {
   customerTrunks     CustomerTrunk[]
   carrierTrunks      CarrierTrunk[]
   routePrefixes      RoutePrefix[]
+  cdrs               Cdr[]
+  ledgerEntries      BalanceLedger[]
   /// Money in micros (1 USD = 1_000_000). Never use floats.
   balanceMicros      BigInt           @default(0)
   creditLimitMicros  BigInt           @default(0)
   billingMode        BillingMode      @default(PREPAID)
+  /// Fallback outbound rate for retail (micros per minute)
+  defaultRateMicros  BigInt           @default(10000)
   maxChannels        Int              @default(0)
   maxCps             Int              @default(0)
   techPrefix         String?
@@ -354,4 +358,62 @@ model RoutePrefix {
   @@unique([accountId, prefix, carrierTrunkId])
   @@index([accountId, prefix])
   @@index([carrierTrunkId])
+}
+
+enum CdrDirection {
+  INBOUND
+  OUTBOUND
+  INTERNAL
+}
+
+enum CdrStatus {
+  RECEIVED
+  RATED
+  ERROR
+  SKIPPED
+}
+
+model Cdr {
+  id               String       @id @default(cuid())
+  uniqueId         String       @unique
+  accountId        String
+  account          Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  direction        CdrDirection @default(OUTBOUND)
+  caller           String
+  callee           String
+  startAt          DateTime?
+  answerAt         DateTime?
+  endAt            DateTime?
+  billsec          Int          @default(0)
+  disposition      String?
+  customerTrunkId  String?
+  carrierTrunkId   String?
+  routePrefixId    String?
+  rateMicros       BigInt?
+  costMicros       BigInt?
+  chargeMicros     BigInt       @default(0)
+  status           CdrStatus    @default(RECEIVED)
+  ratedAt          DateTime?
+  errorMessage     String?
+  raw              Json?
+  ledger           BalanceLedger?
+  createdAt        DateTime     @default(now())
+
+  @@index([accountId, createdAt])
+  @@index([status])
+  @@index([callee])
+}
+
+model BalanceLedger {
+  id                 String   @id @default(cuid())
+  accountId          String
+  account            Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  cdrId              String?  @unique
+  cdr                Cdr?     @relation(fields: [cdrId], references: [id], onDelete: SetNull)
+  deltaMicros        BigInt
+  balanceAfterMicros BigInt
+  reason             String
+  createdAt          DateTime @default(now())
+
+  @@index([accountId, createdAt])
 }

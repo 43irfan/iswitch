@@ -11,12 +11,12 @@ export default async function HomePage() {
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-6 py-16">
         <p className="text-sm uppercase tracking-[0.2em] text-emerald-400">
-          Phase 4 · Wholesale
+          Phase 5 · Billing
         </p>
         <h1 className="mt-4 text-5xl font-semibold tracking-tight">{APP_NAME}</h1>
         <p className="mt-4 max-w-xl text-lg text-zinc-400">
-          Retail PBX plus wholesale SIP trunking, capacity limits, and credit
-          cut-off. Sign in to your portal.
+          Rated CDRs, prefix rates, and prepaid balance debits — retail and
+          wholesale on one platform.
         </p>
         <div className="mt-10">
           <Link

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
-import { SYNC_QUEUE } from './jobs.constants';
+import { CDR_QUEUE, SYNC_QUEUE } from './jobs.constants';
 import { PrismaService } from '../prisma/prisma.service';
 
 export type SyncJobPayload = {
@@ -16,6 +16,7 @@ export type SyncJobPayload = {
 export class JobsService {
   constructor(
     @InjectQueue(SYNC_QUEUE) private readonly syncQueue: Queue,
+    @InjectQueue(CDR_QUEUE) private readonly cdrQueue: Queue,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -56,5 +57,13 @@ export class JobsService {
     });
 
     return { jobId: job.id, queue: SYNC_QUEUE, ...payload };
+  }
+
+  async enqueueCdrRate(input: { cdrId: string; uniqueId: string }) {
+    const job = await this.cdrQueue.add('cdr-rated', input, {
+      removeOnComplete: 200,
+      removeOnFail: 200,
+    });
+    return { jobId: job.id, queue: CDR_QUEUE, ...input };
   }
 }

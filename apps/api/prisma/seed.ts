@@ -7,6 +7,8 @@ async function main() {
   const passwordHash = await bcrypt.hash('Password123!', 10);
 
   await prisma.syncAudit.deleteMany();
+  await prisma.balanceLedger.deleteMany();
+  await prisma.cdr.deleteMany();
   await prisma.routePrefix.deleteMany();
   await prisma.customerTrunk.deleteMany();
   await prisma.carrierTrunk.deleteMany();
@@ -262,8 +264,62 @@ async function main() {
     },
   });
 
+  // Sample rated CDRs for wholesale (65s → 2 billable minutes @ 12000 micros)
+  const cdr1 = await prisma.cdr.create({
+    data: {
+      uniqueId: 'demo-cdr-1',
+      accountId: wholesale.id,
+      direction: 'OUTBOUND',
+      caller: 'bulkvoice',
+      callee: '12125550100',
+      billsec: 65,
+      disposition: 'ANSWERED',
+      rateMicros: 12_000n,
+      costMicros: 8_000n,
+      chargeMicros: 24_000n,
+      status: 'RATED',
+      ratedAt: new Date(),
+    },
+  });
+
+  await prisma.account.update({
+    where: { id: wholesale.id },
+    data: { balanceMicros: { decrement: 24_000n } },
+  });
+
+  const after = await prisma.account.findUniqueOrThrow({
+    where: { id: wholesale.id },
+  });
+
+  await prisma.balanceLedger.create({
+    data: {
+      accountId: wholesale.id,
+      cdrId: cdr1.id,
+      deltaMicros: -24_000n,
+      balanceAfterMicros: after.balanceMicros,
+      reason: 'CDR demo-cdr-1 2 min',
+    },
+  });
+
+  await prisma.cdr.create({
+    data: {
+      uniqueId: 'demo-cdr-2',
+      accountId: retail.id,
+      direction: 'OUTBOUND',
+      caller: '100',
+      callee: '18005551212',
+      billsec: 30,
+      disposition: 'ANSWERED',
+      rateMicros: 10_000n,
+      costMicros: 0n,
+      chargeMicros: 10_000n,
+      status: 'RATED',
+      ratedAt: new Date(),
+    },
+  });
+
   // eslint-disable-next-line no-console
-  console.log('Seeded Phase 4 wholesale + retail demo. Password: Password123!');
+  console.log('Seeded Phase 5 billing + wholesale/retail demo. Password: Password123!');
 }
 
 main()

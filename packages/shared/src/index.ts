@@ -172,6 +172,42 @@ export const updateBillingSchema = z.object({
   techPrefix: z.string().max(16).optional().nullable(),
 });
 
+export const CdrDirection = {
+  INBOUND: 'INBOUND',
+  OUTBOUND: 'OUTBOUND',
+  INTERNAL: 'INTERNAL',
+} as const;
+
+export const ingestCdrSchema = z.object({
+  uniqueId: z.string().min(1).max(128),
+  accountId: z.string().min(1).optional(),
+  /** Resolve wholesale account via customer trunk SIP username */
+  trunkUsername: z.string().min(1).optional(),
+  direction: z.nativeEnum(CdrDirection).default('OUTBOUND'),
+  caller: z.string().min(1).max(64),
+  callee: z.string().min(1).max(64),
+  billsec: z.number().int().min(0),
+  disposition: z.string().max(32).optional(),
+  startAt: z.string().datetime().optional(),
+  answerAt: z.string().datetime().optional(),
+  endAt: z.string().datetime().optional(),
+  raw: z.record(z.unknown()).optional(),
+});
+
+/** Billable minutes with 60s ceiling rounding. */
+export function billableMinutes(billsec: number): number {
+  if (billsec <= 0) return 0;
+  return Math.ceil(billsec / 60);
+}
+
+export function chargeMicrosForCall(
+  rateMicrosPerMinute: bigint | number | string,
+  billsec: number,
+): bigint {
+  const rate = BigInt(rateMicrosPerMinute);
+  return rate * BigInt(billableMinutes(billsec));
+}
+
 /** Credit check helper — true if call may proceed. */
 export function canPlaceCall(opts: {
   billingMode: 'PREPAID' | 'POSTPAID';

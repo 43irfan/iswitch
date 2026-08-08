@@ -25,6 +25,7 @@ export class PortalController {
           { href: '/portal/admin/resellers', label: 'Resellers' },
           { href: '/portal/admin/carriers', label: 'Carriers' },
           { href: '/portal/admin/routes', label: 'Routes' },
+          { href: '/portal/admin/cdrs', label: 'CDRs' },
           { href: '/portal/admin/system', label: 'System' },
         ];
       case 'RESELLER':
@@ -33,6 +34,7 @@ export class PortalController {
           { href: '/portal/reseller/customers', label: 'Customers' },
           { href: '/portal/reseller/carriers', label: 'Carriers' },
           { href: '/portal/reseller/routes', label: 'Routes' },
+          { href: '/portal/reseller/cdrs', label: 'CDRs' },
         ];
       case 'RETAIL_CUSTOMER_ADMIN':
         return [
@@ -42,12 +44,14 @@ export class PortalController {
           { href: '/portal/retail/ring-groups', label: 'Ring groups' },
           { href: '/portal/retail/queues', label: 'Queues' },
           { href: '/portal/retail/ivr', label: 'IVR' },
+          { href: '/portal/retail/cdrs', label: 'CDRs' },
         ];
       case 'WHOLESALE_CUSTOMER':
         return [
           ...common,
           { href: '/portal/wholesale/trunks', label: 'Trunks' },
           { href: '/portal/wholesale/billing', label: 'Balance' },
+          { href: '/portal/wholesale/cdrs', label: 'CDRs' },
         ];
       case 'END_USER':
         return [

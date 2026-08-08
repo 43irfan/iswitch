@@ -12,6 +12,7 @@ import { AccountsModule } from './tenancy/accounts.module';
 import { PortalModule } from './portal/portal.module';
 import { RetailModule } from './retail/retail.module';
 import { WholesaleModule } from './wholesale/wholesale.module';
+import { BillingModule } from './billing/billing.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { WholesaleModule } from './wholesale/wholesale.module';
     PortalModule,
     RetailModule,
     WholesaleModule,
+    BillingModule,
     HealthModule,
     AsteriskModule,
     JobsModule,

@@ -6,7 +6,7 @@ export class AppService {
   getRoot() {
     return {
       name: APP_NAME,
-      message: 'iSwitch API — Phase 4 wholesale',
+      message: 'iSwitch API — Phase 5 billing',
     };
   }
 }
