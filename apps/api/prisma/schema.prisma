@@ -51,23 +51,44 @@ enum RingStrategy {
   RRMEMORY
 }
 
+enum BillingMode {
+  PREPAID
+  POSTPAID
+}
+
+enum TrunkAuthType {
+  USERPASS
+  IP_ACL
+  BOTH
+}
+
 model Account {
-  id          String        @id @default(cuid())
-  name        String
-  type        AccountType
-  status      AccountStatus @default(ACTIVE)
-  parentId    String?
-  parent      Account?      @relation("AccountTree", fields: [parentId], references: [id])
-  children    Account[]     @relation("AccountTree")
-  users       User[]
-  extensions  Extension[]
-  dids        Did[]
-  ringGroups  RingGroup[]
-  queues      CallQueue[]
-  ivrMenus    IvrMenu[]
-  voicemails  VoicemailBox[]
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id                 String           @id @default(cuid())
+  name               String
+  type               AccountType
+  status             AccountStatus    @default(ACTIVE)
+  parentId           String?
+  parent             Account?         @relation("AccountTree", fields: [parentId], references: [id])
+  children           Account[]        @relation("AccountTree")
+  users              User[]
+  extensions         Extension[]
+  dids               Did[]
+  ringGroups         RingGroup[]
+  queues             CallQueue[]
+  ivrMenus           IvrMenu[]
+  voicemails         VoicemailBox[]
+  customerTrunks     CustomerTrunk[]
+  carrierTrunks      CarrierTrunk[]
+  routePrefixes      RoutePrefix[]
+  /// Money in micros (1 USD = 1_000_000). Never use floats.
+  balanceMicros      BigInt           @default(0)
+  creditLimitMicros  BigInt           @default(0)
+  billingMode        BillingMode      @default(PREPAID)
+  maxChannels        Int              @default(0)
+  maxCps             Int              @default(0)
+  techPrefix         String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 
   @@index([parentId])
   @@index([type])
@@ -257,4 +278,80 @@ model SyncAudit {
 
   @@index([entityType, entityId])
   @@index([createdAt])
+}
+
+/// Wholesale customer SIP trunk (inbound from customer PBX / outbound auth)
+model CustomerTrunk {
+  id           String       @id @default(cuid())
+  accountId    String
+  account      Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name         String
+  authType     TrunkAuthType @default(USERPASS)
+  sipUsername  String?
+  sipPassword  String?
+  /// Comma-separated IP/CIDR allow list
+  ipAcl        String?
+  techPrefix   String?
+  maxChannels  Int          @default(10)
+  maxCps       Int          @default(5)
+  enabled      Boolean      @default(true)
+  syncStatus   SyncStatus   @default(PENDING)
+  syncError    String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@unique([accountId, name])
+  @@index([accountId])
+  @@index([sipUsername])
+}
+
+/// Upstream carrier / vendor trunk
+model CarrierTrunk {
+  id             String     @id @default(cuid())
+  /// Owning platform or reseller account that manages this carrier
+  accountId      String
+  account        Account    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  name           String
+  host           String
+  port           Int        @default(5060)
+  sipUsername    String?
+  sipPassword    String?
+  codecs         String     @default("ulaw,alaw")
+  maxChannels    Int        @default(100)
+  maxCps         Int        @default(50)
+  enabled        Boolean    @default(true)
+  priority       Int        @default(100)
+  syncStatus     SyncStatus @default(PENDING)
+  syncError      String?
+  routes         RoutePrefix[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@unique([accountId, name])
+  @@index([accountId])
+}
+
+/// Prefix route with rate (micros per minute) toward a carrier
+model RoutePrefix {
+  id              String       @id @default(cuid())
+  accountId       String
+  account         Account      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  prefix          String
+  description     String?
+  carrierTrunkId  String
+  carrierTrunk    CarrierTrunk @relation(fields: [carrierTrunkId], references: [id], onDelete: Cascade)
+  /// Sell rate to wholesale customer (micros per minute)
+  rateMicros      BigInt       @default(0)
+  /// Cost from carrier (micros per minute)
+  costMicros      BigInt       @default(0)
+  priority        Int          @default(100)
+  enabled         Boolean      @default(true)
+  syncStatus      SyncStatus   @default(PENDING)
+  syncError       String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@unique([accountId, prefix, carrierTrunkId])
+  @@index([accountId, prefix])
+  @@index([carrierTrunkId])
 }

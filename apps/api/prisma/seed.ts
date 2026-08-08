@@ -7,6 +7,9 @@ async function main() {
   const passwordHash = await bcrypt.hash('Password123!', 10);
 
   await prisma.syncAudit.deleteMany();
+  await prisma.routePrefix.deleteMany();
+  await prisma.customerTrunk.deleteMany();
+  await prisma.carrierTrunk.deleteMany();
   await prisma.queueMember.deleteMany();
   await prisma.ringGroupMember.deleteMany();
   await prisma.did.deleteMany();
@@ -44,6 +47,12 @@ async function main() {
       name: 'BulkVoice Wholesale',
       type: AccountType.WHOLESALE,
       parentId: reseller.id,
+      billingMode: 'PREPAID',
+      balanceMicros: 50_000_000n, // $50.00
+      creditLimitMicros: 0n,
+      maxChannels: 50,
+      maxCps: 10,
+      techPrefix: '001',
     },
   });
 
@@ -202,8 +211,59 @@ async function main() {
     },
   });
 
+  await prisma.customerTrunk.create({
+    data: {
+      accountId: wholesale.id,
+      name: 'Primary SIP Trunk',
+      authType: 'BOTH',
+      sipUsername: 'bulkvoice',
+      sipPassword: 'trunkSecret1',
+      ipAcl: '203.0.113.10,203.0.113.11',
+      techPrefix: '001',
+      maxChannels: 30,
+      maxCps: 8,
+    },
+  });
+
+  const carrier = await prisma.carrierTrunk.create({
+    data: {
+      accountId: platform.id,
+      name: 'Demo Carrier US',
+      host: 'sip.demo-carrier.example',
+      port: 5060,
+      codecs: 'ulaw,alaw,g729',
+      maxChannels: 500,
+      maxCps: 100,
+      priority: 10,
+    },
+  });
+
+  await prisma.routePrefix.create({
+    data: {
+      accountId: platform.id,
+      prefix: '1',
+      description: 'NANP / US-CA',
+      carrierTrunkId: carrier.id,
+      rateMicros: 12_000n, // $0.012 / min sell
+      costMicros: 8_000n, // $0.008 / min cost
+      priority: 10,
+    },
+  });
+
+  await prisma.routePrefix.create({
+    data: {
+      accountId: platform.id,
+      prefix: '44',
+      description: 'United Kingdom',
+      carrierTrunkId: carrier.id,
+      rateMicros: 25_000n,
+      costMicros: 18_000n,
+      priority: 20,
+    },
+  });
+
   // eslint-disable-next-line no-console
-  console.log('Seeded Phase 3 retail PBX demo. Password: Password123!');
+  console.log('Seeded Phase 4 wholesale + retail demo. Password: Password123!');
 }
 
 main()

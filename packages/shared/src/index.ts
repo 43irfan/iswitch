@@ -114,6 +114,87 @@ export const createIvrSchema = z.object({
   })).default({}),
 });
 
+export const TrunkAuthType = {
+  USERPASS: 'USERPASS',
+  IP_ACL: 'IP_ACL',
+  BOTH: 'BOTH',
+} as const;
+
+export const BillingMode = {
+  PREPAID: 'PREPAID',
+  POSTPAID: 'POSTPAID',
+} as const;
+
+export const createCustomerTrunkSchema = z.object({
+  name: z.string().min(1).max(80),
+  authType: z.nativeEnum(TrunkAuthType).optional(),
+  sipUsername: z.string().min(3).max(64).optional().nullable(),
+  sipPassword: z.string().min(8).max(64).optional().nullable(),
+  ipAcl: z.string().max(500).optional().nullable(),
+  techPrefix: z.string().max(16).optional().nullable(),
+  maxChannels: z.number().int().min(1).max(10000).optional(),
+  maxCps: z.number().int().min(1).max(1000).optional(),
+  enabled: z.boolean().optional(),
+});
+
+export const updateCustomerTrunkSchema = createCustomerTrunkSchema.partial();
+
+export const createCarrierTrunkSchema = z.object({
+  name: z.string().min(1).max(80),
+  host: z.string().min(1).max(255),
+  port: z.number().int().min(1).max(65535).optional(),
+  sipUsername: z.string().max(64).optional().nullable(),
+  sipPassword: z.string().max(64).optional().nullable(),
+  codecs: z.string().max(120).optional(),
+  maxChannels: z.number().int().min(1).max(100000).optional(),
+  maxCps: z.number().int().min(1).max(10000).optional(),
+  priority: z.number().int().min(1).max(1000).optional(),
+  enabled: z.boolean().optional(),
+});
+
+export const createRoutePrefixSchema = z.object({
+  prefix: z.string().min(1).max(32),
+  description: z.string().max(120).optional(),
+  carrierTrunkId: z.string().min(1),
+  /** Rate in micros per minute (string or number accepted from JSON). */
+  rateMicros: z.union([z.number().int().nonnegative(), z.string()]),
+  costMicros: z.union([z.number().int().nonnegative(), z.string()]).optional(),
+  priority: z.number().int().min(1).max(1000).optional(),
+  enabled: z.boolean().optional(),
+});
+
+export const updateBillingSchema = z.object({
+  balanceMicros: z.union([z.number().int(), z.string()]).optional(),
+  creditLimitMicros: z.union([z.number().int().nonnegative(), z.string()]).optional(),
+  billingMode: z.nativeEnum(BillingMode).optional(),
+  maxChannels: z.number().int().min(0).max(100000).optional(),
+  maxCps: z.number().int().min(0).max(10000).optional(),
+  techPrefix: z.string().max(16).optional().nullable(),
+});
+
+/** Credit check helper — true if call may proceed. */
+export function canPlaceCall(opts: {
+  billingMode: 'PREPAID' | 'POSTPAID';
+  balanceMicros: bigint | number | string;
+  creditLimitMicros: bigint | number | string;
+  accountStatus: 'ACTIVE' | 'SUSPENDED';
+}): { allowed: boolean; reason?: string } {
+  if (opts.accountStatus !== 'ACTIVE') {
+    return { allowed: false, reason: 'Account suspended' };
+  }
+  const balance = BigInt(opts.balanceMicros);
+  const limit = BigInt(opts.creditLimitMicros);
+  if (opts.billingMode === 'PREPAID') {
+    if (balance <= 0n) return { allowed: false, reason: 'Insufficient prepaid balance' };
+    return { allowed: true };
+  }
+  // Postpaid: allow while balance + creditLimit > 0 (balance may be negative usage)
+  if (balance + limit <= 0n) {
+    return { allowed: false, reason: 'Credit limit exceeded' };
+  }
+  return { allowed: true };
+}
+
 export const healthResponseSchema = z.object({
   status: z.literal('ok'),
   service: z.string(),

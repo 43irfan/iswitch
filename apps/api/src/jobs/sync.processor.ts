@@ -60,6 +60,34 @@ export class SyncProcessor extends WorkerHost {
       });
     }
 
+    if (
+      entityType === 'customer_trunk' &&
+      entityId !== 'probe' &&
+      action !== 'delete'
+    ) {
+      await this.prisma.customerTrunk.updateMany({
+        where: { id: entityId },
+        data: {
+          syncStatus: status.connected ? 'SYNCED' : 'PENDING',
+          syncError: status.connected ? null : 'Asterisk offline — pending sync',
+        },
+      });
+    }
+
+    if (
+      entityType === 'carrier_trunk' &&
+      entityId !== 'probe' &&
+      action !== 'delete'
+    ) {
+      await this.prisma.carrierTrunk.updateMany({
+        where: { id: entityId },
+        data: {
+          syncStatus: status.connected ? 'SYNCED' : 'PENDING',
+          syncError: status.connected ? null : 'Asterisk offline — pending sync',
+        },
+      });
+    }
+
     return { ok: true, message, processedAt: new Date().toISOString() };
   }
 }

@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { AccountsModule } from './tenancy/accounts.module';
 import { PortalModule } from './portal/portal.module';
 import { RetailModule } from './retail/retail.module';
+import { WholesaleModule } from './wholesale/wholesale.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { RetailModule } from './retail/retail.module';
     AccountsModule,
     PortalModule,
     RetailModule,
+    WholesaleModule,
     HealthModule,
     AsteriskModule,
     JobsModule,

@@ -23,12 +23,16 @@ export class PortalController {
         return [
           ...common,
           { href: '/portal/admin/resellers', label: 'Resellers' },
+          { href: '/portal/admin/carriers', label: 'Carriers' },
+          { href: '/portal/admin/routes', label: 'Routes' },
           { href: '/portal/admin/system', label: 'System' },
         ];
       case 'RESELLER':
         return [
           ...common,
           { href: '/portal/reseller/customers', label: 'Customers' },
+          { href: '/portal/reseller/carriers', label: 'Carriers' },
+          { href: '/portal/reseller/routes', label: 'Routes' },
         ];
       case 'RETAIL_CUSTOMER_ADMIN':
         return [
@@ -43,6 +47,7 @@ export class PortalController {
         return [
           ...common,
           { href: '/portal/wholesale/trunks', label: 'Trunks' },
+          { href: '/portal/wholesale/billing', label: 'Balance' },
         ];
       case 'END_USER':
         return [

@@ -21,7 +21,7 @@ These are final unless we explicitly change them in the decision log.
 | **Stack** | **TypeScript:** NestJS + Next.js + Prisma + PostgreSQL + Redis/BullMQ + Asterisk |
 | **Not using** | Laravel/PHP as primary stack; portals on Asterisk native tables |
 | **Hiring** | Hire **Asterisk/telecom** skill when needed — not a PHP team for stack fashion |
-| **Current phase** | **3 — Retail PBX core** (done) · next: Phase 4 Wholesale |
+| **Current phase** | **4 — Wholesale** (done) · next: Phase 5 Billing |
 
 **Simple mental model:**
 
@@ -235,8 +235,8 @@ Sippy ≈ Python + PHP + Go + Vue. Many billing portals ≈ Laravel. ARI/realtim
 | **6 — Hardening** | Audit, retries, fraud basics, monitoring | Production baseline |
 | **7 — Differentiating** | WebRTC, LCR polish, recording, SBC edge | Competitive depth |
 
-**Current phase:** 3 — Retail PBX core (done).  
-**Next:** Phase 4 — Wholesale.
+**Current phase:** 4 — Wholesale (done).  
+**Next:** Phase 5 — Billing.
 
 ---
 
@@ -256,6 +256,7 @@ Sippy ≈ Python + PHP + Go + Vue. Many billing portals ≈ Laravel. ARI/realtim
 | 2026-08-08 | Dev DB: use **local PostgreSQL** (`iswitch` / `postgres`:`postgres`); Redis via Docker or local |
 | 2026-08-08 | **Phase 2:** session cookie auth (BFF), RBAC guards, account tenancy tree, role portal shells + seed users |
 | 2026-08-08 | **Phase 3:** retail PBX models (extensions, DIDs, ring groups, queues, IVR, voicemail), CRUD APIs, sync queue/audit, portal UI |
+| 2026-08-08 | **Phase 4:** wholesale customer trunks, carriers, prefix routes, prepaid balance/credit cut-off (micros), portal UI |
 
 ---
 
