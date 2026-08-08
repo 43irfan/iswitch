@@ -2,6 +2,9 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export function CreateExtensionForm() {
   const router = useRouter();
@@ -33,31 +36,32 @@ export function CreateExtensionForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="form-panel">
-      <div className="field">
-        <label htmlFor="ext-number">Extension</label>
-        <input
+    <form
+      onSubmit={onSubmit}
+      className="mb-4 grid gap-3 rounded-xl border bg-card p-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+    >
+      <div className="grid gap-1.5">
+        <Label htmlFor="ext-number">Extension</Label>
+        <Input
           id="ext-number"
           value={number}
           onChange={(e) => setNumber(e.target.value)}
           required
         />
       </div>
-      <div className="field">
-        <label htmlFor="ext-name">Display name</label>
-        <input
+      <div className="grid gap-1.5">
+        <Label htmlFor="ext-name">Display name</Label>
+        <Input
           id="ext-name"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
         />
       </div>
-      <button type="submit" disabled={loading} className="btn btn-primary">
+      <Button type="submit" disabled={loading}>
         {loading ? 'Adding…' : 'Add'}
-      </button>
+      </Button>
       {error ? (
-        <p style={{ gridColumn: '1 / -1', margin: 0, color: 'var(--danger)' }}>
-          {error}
-        </p>
+        <p className="text-sm text-destructive sm:col-span-3">{error}</p>
       ) : null}
     </form>
   );

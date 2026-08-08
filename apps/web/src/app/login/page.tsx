@@ -3,52 +3,52 @@ import { LoginForm } from '@/components/login-form';
 import { ThemeSwitch } from '@/components/theme-provider';
 import { getSessionUser } from '@/lib/session';
 import { redirect } from 'next/navigation';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 export default async function LoginPage() {
   const user = await getSessionUser();
   if (user) redirect(ROLE_PORTAL_PATH[user.role]);
 
   return (
-    <main className="auth-stage">
-      <div style={{ position: 'absolute', top: 16, right: 16 }}>
+    <main className="relative flex min-h-screen items-center justify-center bg-background p-6">
+      <div className="absolute top-4 right-4">
         <ThemeSwitch />
       </div>
-      <div className="auth-card">
-        <div className="brand">
-          {APP_NAME}
-          <span>NOC</span>
-        </div>
-        <h1>Operator sign-in</h1>
-        <p className="lede">Role-scoped portals · session cookie auth</p>
-        <LoginForm />
-        <div
-          style={{
-            marginTop: 20,
-            paddingTop: 16,
-            borderTop: '1px solid var(--border)',
-          }}
-        >
-          <p className="faint" style={{ margin: 0, fontSize: 11, fontWeight: 700 }}>
-            DEMO ACCOUNTS
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <p className="text-sm font-semibold tracking-tight">
+            {APP_NAME}{' '}
+            <span className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
+              NOC
+            </span>
           </p>
-          <ul
-            className="mono"
-            style={{
-              margin: '8px 0 0',
-              padding: 0,
-              listStyle: 'none',
-              color: 'var(--text-muted)',
-              lineHeight: 1.7,
-            }}
-          >
-            <li>admin@iswitch.local</li>
-            <li>reseller@iswitch.local</li>
-            <li>retail@iswitch.local</li>
-            <li>wholesale@iswitch.local</li>
-            <li>user@iswitch.local</li>
-          </ul>
-        </div>
-      </div>
+          <CardTitle>Operator sign-in</CardTitle>
+          <CardDescription>
+            Role-scoped portals · session cookie auth
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LoginForm />
+          <div className="mt-5 border-t pt-4">
+            <p className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
+              Demo accounts
+            </p>
+            <ul className="mt-2 space-y-1 font-mono text-xs text-muted-foreground">
+              <li>admin@iswitch.local</li>
+              <li>reseller@iswitch.local</li>
+              <li>retail@iswitch.local</li>
+              <li>wholesale@iswitch.local</li>
+              <li>user@iswitch.local</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
     </main>
   );
 }

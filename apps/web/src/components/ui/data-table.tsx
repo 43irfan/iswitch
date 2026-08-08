@@ -1,4 +1,11 @@
-import { EmptyState } from './empty-state';
+import { EmptyState } from '@/components/ui/empty-state';
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 export function DataTable({
   columns,
@@ -24,17 +31,17 @@ export function DataTable({
   }
 
   return (
-    <div className="data-table">
-      <table>
-        <thead>
-          <tr>
+    <div className="overflow-hidden rounded-xl border bg-card">
+      <Table>
+        <TableHeader>
+          <TableRow>
             {columns.map((c) => (
-              <th key={c}>{c}</th>
+              <TableHead key={c}>{c}</TableHead>
             ))}
-          </tr>
-        </thead>
-        <tbody>{rows}</tbody>
-      </table>
+          </TableRow>
+        </TableHeader>
+        <TableBody>{rows}</TableBody>
+      </Table>
     </div>
   );
 }

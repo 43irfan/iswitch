@@ -2,6 +2,9 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export function CreateTrunkForm() {
   const router = useRouter();
@@ -41,46 +44,49 @@ export function CreateTrunkForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="form-panel">
-      <div className="field">
-        <label htmlFor="trunk-name">Trunk name</label>
-        <input
+    <form
+      onSubmit={onSubmit}
+      className="mb-4 grid gap-3 rounded-xl border bg-card p-3 sm:grid-cols-2 lg:grid-cols-5 lg:items-end"
+    >
+      <div className="grid gap-1.5">
+        <Label htmlFor="trunk-name">Trunk name</Label>
+        <Input
           id="trunk-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
         />
       </div>
-      <div className="field">
-        <label htmlFor="ip-acl">IP ACL</label>
-        <input
+      <div className="grid gap-1.5">
+        <Label htmlFor="ip-acl">IP ACL</Label>
+        <Input
           id="ip-acl"
           placeholder="Optional"
           value={ipAcl}
           onChange={(e) => setIpAcl(e.target.value)}
         />
       </div>
-      <div className="field">
-        <label htmlFor="max-ch">Max channels</label>
-        <input
+      <div className="grid gap-1.5">
+        <Label htmlFor="max-ch">Max channels</Label>
+        <Input
           id="max-ch"
           value={maxChannels}
           onChange={(e) => setMaxChannels(e.target.value)}
         />
       </div>
-      <div className="field">
-        <label htmlFor="max-cps">Max CPS</label>
-        <input
+      <div className="grid gap-1.5">
+        <Label htmlFor="max-cps">Max CPS</Label>
+        <Input
           id="max-cps"
           value={maxCps}
           onChange={(e) => setMaxCps(e.target.value)}
         />
       </div>
-      <button type="submit" disabled={loading} className="btn btn-primary">
+      <Button type="submit" disabled={loading}>
         {loading ? 'Creating…' : 'Create trunk'}
-      </button>
+      </Button>
       {error ? (
-        <p style={{ gridColumn: '1 / -1', margin: 0, color: 'var(--danger)' }}>
+        <p className="text-sm text-destructive sm:col-span-2 lg:col-span-5">
           {error}
         </p>
       ) : null}

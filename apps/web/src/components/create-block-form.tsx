@@ -2,6 +2,9 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export function CreateBlockForm() {
   const router = useRouter();
@@ -33,34 +36,35 @@ export function CreateBlockForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="form-panel">
-      <div className="field">
-        <label htmlFor="prefix">Prefix</label>
-        <input
+    <form
+      onSubmit={onSubmit}
+      className="mb-4 grid gap-3 rounded-xl border bg-card p-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+    >
+      <div className="grid gap-1.5">
+        <Label htmlFor="prefix">Prefix</Label>
+        <Input
           id="prefix"
-          className="mono"
+          className="font-mono"
           placeholder="1900"
           value={prefix}
           onChange={(e) => setPrefix(e.target.value)}
           required
         />
       </div>
-      <div className="field">
-        <label htmlFor="reason">Reason</label>
-        <input
+      <div className="grid gap-1.5">
+        <Label htmlFor="reason">Reason</Label>
+        <Input
           id="reason"
           placeholder="Optional"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
         />
       </div>
-      <button type="submit" disabled={loading} className="btn btn-primary">
+      <Button type="submit" disabled={loading}>
         {loading ? 'Adding…' : 'Add block'}
-      </button>
+      </Button>
       {error ? (
-        <p style={{ gridColumn: '1 / -1', margin: 0, color: 'var(--danger)' }}>
-          {error}
-        </p>
+        <p className="text-sm text-destructive sm:col-span-3">{error}</p>
       ) : null}
     </form>
   );

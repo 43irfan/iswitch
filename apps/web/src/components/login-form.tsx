@@ -3,6 +3,9 @@
 import { useRouter } from 'next/navigation';
 import { FormEvent, useState } from 'react';
 import { ROLE_PORTAL_PATH, type SessionUser } from '@iswitch/shared';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export function LoginForm() {
   const router = useRouter();
@@ -38,13 +41,10 @@ export function LoginForm() {
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      style={{ marginTop: 20, display: 'grid', gap: 12 }}
-    >
-      <div className="field">
-        <label htmlFor="email">Email</label>
-        <input
+    <form onSubmit={onSubmit} className="mt-5 grid gap-3">
+      <div className="grid gap-1.5">
+        <Label htmlFor="email">Email</Label>
+        <Input
           id="email"
           type="email"
           value={email}
@@ -53,9 +53,9 @@ export function LoginForm() {
           autoComplete="username"
         />
       </div>
-      <div className="field">
-        <label htmlFor="password">Password</label>
-        <input
+      <div className="grid gap-1.5">
+        <Label htmlFor="password">Password</Label>
+        <Input
           id="password"
           type="password"
           value={password}
@@ -64,16 +64,12 @@ export function LoginForm() {
           autoComplete="current-password"
         />
       </div>
-      {error ? (
-        <p style={{ margin: 0, color: 'var(--danger)', fontSize: 13 }}>
-          {error}
-        </p>
-      ) : null}
-      <button type="submit" disabled={loading} className="btn btn-primary">
+      {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      <Button type="submit" disabled={loading} className="w-full">
         {loading ? 'Signing in…' : 'Continue'}
-      </button>
-      <p className="faint" style={{ margin: 0, fontSize: 12 }}>
-        Password <span className="mono">Password123!</span>
+      </Button>
+      <p className="text-xs text-muted-foreground">
+        Password <span className="font-mono">Password123!</span>
       </p>
     </form>
   );

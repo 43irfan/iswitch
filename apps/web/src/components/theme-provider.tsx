@@ -32,6 +32,7 @@ function resolveMode(mode: ThemeMode): 'light' | 'dark' {
 
 function applyTheme(resolved: 'light' | 'dark') {
   document.documentElement.setAttribute('data-theme', resolved);
+  document.documentElement.classList.toggle('dark', resolved === 'dark');
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {

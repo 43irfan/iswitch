@@ -1,3 +1,11 @@
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+
 export function EmptyState({
   title,
   description,
@@ -8,10 +16,16 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="empty-state">
-      <h3>{title}</h3>
-      {description ? <p>{description}</p> : null}
-      {action}
-    </div>
+    <Card className="border-dashed">
+      <CardHeader className="items-center text-center">
+        <CardTitle className="text-base">{title}</CardTitle>
+        {description ? <CardDescription>{description}</CardDescription> : null}
+        {action ? <div className="pt-2">{action}</div> : null}
+      </CardHeader>
+    </Card>
   );
+}
+
+export function EmptyStateButton(props: React.ComponentProps<typeof Button>) {
+  return <Button {...props} />;
 }

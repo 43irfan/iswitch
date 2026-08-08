@@ -3,6 +3,9 @@
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DidDestinationType } from '@iswitch/shared';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export function CreateDidForm({
   extensions,
@@ -44,10 +47,13 @@ export function CreateDidForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="form-panel">
-      <div className="field">
-        <label htmlFor="did-number">DID</label>
-        <input
+    <form
+      onSubmit={onSubmit}
+      className="mb-4 grid gap-3 rounded-xl border bg-card p-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-end"
+    >
+      <div className="grid gap-1.5">
+        <Label htmlFor="did-number">DID</Label>
+        <Input
           id="did-number"
           placeholder="+1555…"
           value={number}
@@ -55,18 +61,19 @@ export function CreateDidForm({
           required
         />
       </div>
-      <div className="field">
-        <label htmlFor="did-desc">Description</label>
-        <input
+      <div className="grid gap-1.5">
+        <Label htmlFor="did-desc">Description</Label>
+        <Input
           id="did-desc"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
-      <div className="field">
-        <label htmlFor="did-dest">Extension</label>
+      <div className="grid gap-1.5">
+        <Label htmlFor="did-dest">Extension</Label>
         <select
           id="did-dest"
+          className="flex h-8 w-full rounded-2xl border border-input bg-transparent px-3 text-sm outline-none"
           value={destinationRef}
           onChange={(e) => setDestinationRef(e.target.value)}
           required
@@ -79,15 +86,11 @@ export function CreateDidForm({
           ))}
         </select>
       </div>
-      <button
-        type="submit"
-        disabled={loading || extensions.length === 0}
-        className="btn btn-primary"
-      >
+      <Button type="submit" disabled={loading || extensions.length === 0}>
         {loading ? 'Adding…' : 'Add DID'}
-      </button>
+      </Button>
       {error ? (
-        <p style={{ gridColumn: '1 / -1', margin: 0, color: 'var(--danger)' }}>
+        <p className="text-sm text-destructive sm:col-span-2 lg:col-span-4">
           {error}
         </p>
       ) : null}
