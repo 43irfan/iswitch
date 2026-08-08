@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Phase 1 skeleton — expand in Phase 2+
+enum UserRole {
+  SUPER_ADMIN
+  RESELLER
+  RETAIL_CUSTOMER_ADMIN
+  WHOLESALE_CUSTOMER
+  END_USER
+}
+
+enum AccountType {
+  PLATFORM
+  RESELLER
+  RETAIL
+  WHOLESALE
+}
+
+model Account {
+  id        String      @id @default(cuid())
+  name      String
+  type      AccountType
+  parentId  String?
+  parent    Account?    @relation("AccountTree", fields: [parentId], references: [id])
+  children  Account[]   @relation("AccountTree")
+  users     User[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  role         UserRole
+  accountId    String
+  account      Account  @relation(fields: [accountId], references: [id])
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([accountId])
+}

@@ -1,0 +1,42 @@
+# Optional local infra for iSwitch.
+# Postgres: prefer host Postgres (DATABASE_URL in apps/api/.env).
+# Redis: use this service if you do not already have Redis on :6379.
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: iswitch-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - iswitch_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # Optional — only if you are not using host Postgres
+  postgres:
+    profiles: ["docker-postgres"]
+    image: postgres:16-alpine
+    container_name: iswitch-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: iswitch
+    volumes:
+      - iswitch_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d iswitch"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  iswitch_redis_data:
+  iswitch_pg_data:

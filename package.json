@@ -1,0 +1,19 @@
+{
+  "name": "iswitch",
+  "private": true,
+  "packageManager": "pnpm@9.12.3",
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "db:generate": "pnpm --filter @iswitch/api prisma:generate",
+    "db:migrate": "pnpm --filter @iswitch/api prisma:migrate",
+    "db:studio": "pnpm --filter @iswitch/api prisma:studio",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3"
+  }
+}
