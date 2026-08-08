@@ -7,6 +7,9 @@ import { PrismaModule } from './prisma/prisma.module';
 import { HealthModule } from './health/health.module';
 import { AsteriskModule } from './asterisk/asterisk.module';
 import { JobsModule } from './jobs/jobs.module';
+import { AuthModule } from './auth/auth.module';
+import { AccountsModule } from './tenancy/accounts.module';
+import { PortalModule } from './portal/portal.module';
 
 @Module({
   imports: [
@@ -18,6 +21,9 @@ import { JobsModule } from './jobs/jobs.module';
       },
     }),
     PrismaModule,
+    AuthModule,
+    AccountsModule,
+    PortalModule,
     HealthModule,
     AsteriskModule,
     JobsModule,

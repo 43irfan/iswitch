@@ -29,14 +29,17 @@ pnpm install
 cp .env.example apps/api/.env
 # Ensure DATABASE_URL=postgresql://postgres:postgres@localhost:5432/iswitch?schema=public
 
-# 4) Prisma client + migrate
+# 4) Prisma client + migrate + seed
 pnpm db:generate
 pnpm db:migrate
+pnpm db:seed
 
 # 5) Dev (API :3001, Web :3000)
 pnpm dev
 ```
 
+Demo logins (password `Password123!`):
+`admin@iswitch.local`, `reseller@iswitch.local`, `retail@iswitch.local`, `wholesale@iswitch.local`, `user@iswitch.local`
 ## Workspace layout
 
 ```text
