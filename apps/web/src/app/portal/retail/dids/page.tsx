@@ -1,20 +1,21 @@
 import { PortalShell } from '@/components/portal-shell';
 import { CreateDidForm } from '@/components/create-did-form';
+import { PageHeader } from '@/components/ui/page-header';
+import { DataTable } from '@/components/ui/data-table';
 import { apiFetch, serverCookieHeader } from '@/lib/api';
 import { getPortalShell, requireUser } from '@/lib/session';
 import { UserRole } from '@iswitch/shared';
 
-type DidRow = {
+type Did = {
   id: string;
   number: string;
   description: string | null;
   destinationType: string;
-  destinationRef: string;
-  enabled: boolean;
+  destinationRef: string | null;
   syncStatus: string;
 };
 
-type ExtensionRow = {
+type Extension = {
   id: string;
   number: string;
   displayName: string | null;
@@ -25,8 +26,8 @@ export default async function RetailDidsPage() {
   const shell = await getPortalShell();
   const cookieHeader = await serverCookieHeader();
   const [dids, extensions] = await Promise.all([
-    apiFetch<DidRow[]>('/retail/dids', { cookieHeader }),
-    apiFetch<ExtensionRow[]>('/retail/extensions', { cookieHeader }),
+    apiFetch<Did[]>('/retail/dids', { cookieHeader }),
+    apiFetch<Extension[]>('/retail/extensions', { cookieHeader }),
   ]);
 
   return (
@@ -36,37 +37,30 @@ export default async function RetailDidsPage() {
       nav={shell.nav}
       title="DIDs"
     >
-      <h2 className="text-xl font-semibold">Inbound DIDs</h2>
-      <p className="mt-2 text-sm text-zinc-400">
-        Map phone numbers to extensions, IVR, queues, or ring groups.
-      </p>
+      <PageHeader
+        title="DIDs"
+        description="Inbound numbers routed to extensions or features."
+      />
       <CreateDidForm extensions={extensions} />
-      <div className="mt-8 overflow-hidden rounded-xl border border-zinc-800">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-zinc-900 text-zinc-400">
-            <tr>
-              <th className="px-4 py-3">Number</th>
-              <th className="px-4 py-3">Description</th>
-              <th className="px-4 py-3">Destination</th>
-              <th className="px-4 py-3">Sync</th>
-            </tr>
-          </thead>
-          <tbody>
-            {dids.map((did) => (
-              <tr key={did.id} className="border-t border-zinc-800">
-                <td className="px-4 py-3 font-mono text-xs">{did.number}</td>
-                <td className="px-4 py-3 text-zinc-400">
-                  {did.description ?? '—'}
-                </td>
-                <td className="px-4 py-3 text-zinc-400">
-                  {did.destinationType} → {did.destinationRef.slice(0, 8)}…
-                </td>
-                <td className="px-4 py-3 text-zinc-400">{did.syncStatus}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={['Number', 'Destination', 'Description', 'Sync']}
+        emptyTitle="No DIDs"
+        rows={dids.map((did) => (
+          <tr key={did.id}>
+            <td className="mono" style={{ fontWeight: 520 }}>
+              {did.number}
+            </td>
+            <td className="mono">
+              {did.destinationType}
+              {did.destinationRef ? ` / ${did.destinationRef.slice(0, 8)}` : ''}
+            </td>
+            <td className="muted">{did.description ?? '—'}</td>
+            <td>
+              <span className="badge">{did.syncStatus}</span>
+            </td>
+          </tr>
+        ))}
+      />
     </PortalShell>
   );
 }

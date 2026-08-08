@@ -1,4 +1,7 @@
+import Link from 'next/link';
 import { PortalShell } from '@/components/portal-shell';
+import { PageHeader } from '@/components/ui/page-header';
+import { EmptyState } from '@/components/ui/empty-state';
 import { UserRole } from '@iswitch/shared';
 import { getPortalShell, requireUser } from '@/lib/session';
 
@@ -12,10 +15,19 @@ export default async function ResellerCustomersPage() {
       nav={shell.nav}
       title="Customers"
     >
-      <h2 className="text-xl font-semibold">Customers</h2>
-      <p className="mt-2 text-sm text-zinc-400">
-        Placeholder — customer management expands in retail/wholesale phases.
-      </p>
+      <PageHeader
+        title="Customers"
+        description="Dedicated customer management expands later."
+      />
+      <EmptyState
+        title="See Overview"
+        description="Your reseller overview lists retail and wholesale accounts."
+        action={
+          <Link href="/portal/reseller" className="btn btn-primary">
+            Open overview
+          </Link>
+        }
+      />
     </PortalShell>
   );
 }

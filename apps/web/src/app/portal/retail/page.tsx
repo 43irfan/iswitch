@@ -1,14 +1,16 @@
+import Link from 'next/link';
 import { PortalShell } from '@/components/portal-shell';
+import { PageHeader } from '@/components/ui/page-header';
+import { NocGrid, NocWidget } from '@/components/ui/noc-widgets';
 import { apiFetch, serverCookieHeader } from '@/lib/api';
 import { getPortalShell, requireUser } from '@/lib/session';
 import { UserRole } from '@iswitch/shared';
-import Link from 'next/link';
 
 export default async function RetailPortalPage() {
   await requireUser(UserRole.RETAIL_CUSTOMER_ADMIN);
   const shell = await getPortalShell();
   const cookieHeader = await serverCookieHeader();
-  const [account, extensions, dids, ringGroups, queues, ivr] =
+  const [account, extensions, dids, ringGroups, queues, ivr, summary] =
     await Promise.all([
       apiFetch<{ name: string; status: string }>('/accounts/me', {
         cookieHeader,
@@ -18,37 +20,66 @@ export default async function RetailPortalPage() {
       apiFetch<unknown[]>('/retail/ring-groups', { cookieHeader }),
       apiFetch<unknown[]>('/retail/queues', { cookieHeader }),
       apiFetch<unknown[]>('/retail/ivr', { cookieHeader }),
+      apiFetch<{ count: number }>('/billing/summary', { cookieHeader }).catch(
+        () => ({ count: 0 }),
+      ),
     ]);
-
-  const cards = [
-    { href: '/portal/retail/extensions', label: 'Extensions', count: extensions.length },
-    { href: '/portal/retail/dids', label: 'DIDs', count: dids.length },
-    { href: '/portal/retail/ring-groups', label: 'Ring groups', count: ringGroups.length },
-    { href: '/portal/retail/queues', label: 'Queues', count: queues.length },
-    { href: '/portal/retail/ivr', label: 'IVR menus', count: ivr.length },
-  ];
 
   return (
     <PortalShell
       user={shell.user}
       roleLabel={shell.roleLabel}
       nav={shell.nav}
-      title="Retail PBX"
+      title="NOC dashboard"
     >
-      <h2 className="text-xl font-semibold">{account.name}</h2>
-      <p className="mt-2 text-sm text-zinc-400">
-        Phase 3 retail core — extensions, DIDs, ring groups, queues, IVR with
-        Asterisk sync queue.
-      </p>
-      <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {cards.map((card) => (
-          <Link
-            key={card.href}
-            href={card.href}
-            className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 hover:border-zinc-600"
-          >
-            <p className="text-sm text-zinc-400">{card.label}</p>
-            <p className="mt-2 text-3xl font-semibold">{card.count}</p>
+      <PageHeader
+        title={account.name}
+        description={`Retail PBX status · ${account.status}`}
+        actions={
+          <Link href="/portal/retail/extensions" className="btn btn-primary">
+            Extensions
+          </Link>
+        }
+      />
+      <NocGrid>
+        <NocWidget
+          label="Extensions"
+          value={extensions.length}
+          tone="ok"
+          span={3}
+          href="/portal/retail/extensions"
+        />
+        <NocWidget
+          label="DIDs"
+          value={dids.length}
+          span={3}
+          href="/portal/retail/dids"
+        />
+        <NocWidget
+          label="Queues / IVR"
+          value={`${queues.length} / ${ivr.length}`}
+          span={3}
+          meta={`${ringGroups.length} ring groups`}
+        />
+        <NocWidget
+          label="CDRs"
+          value={summary.count}
+          span={3}
+          href="/portal/retail/cdrs"
+          actionLabel="Open"
+        />
+      </NocGrid>
+      <div className="list-links">
+        {[
+          { href: '/portal/retail/extensions', label: 'Extensions', count: extensions.length },
+          { href: '/portal/retail/dids', label: 'DIDs', count: dids.length },
+          { href: '/portal/retail/ring-groups', label: 'Ring groups', count: ringGroups.length },
+          { href: '/portal/retail/queues', label: 'Queues', count: queues.length },
+          { href: '/portal/retail/ivr', label: 'IVR', count: ivr.length },
+        ].map((l) => (
+          <Link key={l.href} href={l.href}>
+            <span>{l.label}</span>
+            <span className="count">{l.count}</span>
           </Link>
         ))}
       </div>

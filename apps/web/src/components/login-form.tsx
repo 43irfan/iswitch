@@ -38,7 +38,10 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-7 space-y-4">
+    <form
+      onSubmit={onSubmit}
+      style={{ marginTop: 20, display: 'grid', gap: 12 }}
+    >
       <div className="field">
         <label htmlFor="email">Email</label>
         <input
@@ -62,14 +65,15 @@ export function LoginForm() {
         />
       </div>
       {error ? (
-        <p className="text-sm font-medium text-[var(--danger)]">{error}</p>
+        <p style={{ margin: 0, color: 'var(--danger)', fontSize: 13 }}>
+          {error}
+        </p>
       ) : null}
-      <button type="submit" disabled={loading} className="btn-primary w-full">
-        {loading ? 'Signing in…' : 'Sign in'}
+      <button type="submit" disabled={loading} className="btn btn-primary">
+        {loading ? 'Signing in…' : 'Continue'}
       </button>
-      <p className="text-xs text-[var(--ink-faint)]">
-        Demo password{' '}
-        <code className="mono text-[var(--ink-soft)]">Password123!</code>
+      <p className="faint" style={{ margin: 0, fontSize: 12 }}>
+        Password <span className="mono">Password123!</span>
       </p>
     </form>
   );

@@ -33,10 +33,7 @@ export function CreateExtensionForm() {
   }
 
   return (
-    <form
-      onSubmit={onSubmit}
-      className="panel mt-6 grid gap-3 p-4 sm:grid-cols-[1fr_1fr_auto]"
-    >
+    <form onSubmit={onSubmit} className="form-panel">
       <div className="field">
         <label htmlFor="ext-number">Extension</label>
         <input
@@ -54,13 +51,13 @@ export function CreateExtensionForm() {
           onChange={(e) => setDisplayName(e.target.value)}
         />
       </div>
-      <div className="flex items-end">
-        <button type="submit" disabled={loading} className="btn-primary w-full">
-          {loading ? 'Adding…' : 'Add extension'}
-        </button>
-      </div>
+      <button type="submit" disabled={loading} className="btn btn-primary">
+        {loading ? 'Adding…' : 'Add'}
+      </button>
       {error ? (
-        <p className="sm:col-span-3 text-sm text-[var(--danger)]">{error}</p>
+        <p style={{ gridColumn: '1 / -1', margin: 0, color: 'var(--danger)' }}>
+          {error}
+        </p>
       ) : null}
     </form>
   );

@@ -1,4 +1,6 @@
 import { PortalShell } from '@/components/portal-shell';
+import { PageHeader } from '@/components/ui/page-header';
+import { DataTable } from '@/components/ui/data-table';
 import { apiFetch, serverCookieHeader } from '@/lib/api';
 import { getPortalShell, requireUser } from '@/lib/session';
 import { UserRole } from '@iswitch/shared';
@@ -9,7 +11,7 @@ type RingGroup = {
   strategy: string;
   ringTimeout: number;
   syncStatus: string;
-  members: { extension: { number: string; displayName: string | null } }[];
+  members: { extension: { number: string } }[];
 };
 
 export default async function RetailRingGroupsPage() {
@@ -27,30 +29,28 @@ export default async function RetailRingGroupsPage() {
       nav={shell.nav}
       title="Ring groups"
     >
-      <h2 className="text-xl font-semibold">Ring groups</h2>
-      <p className="mt-2 text-sm text-zinc-400">
-        Simultaneous / hunt ringing across extensions.
-      </p>
-      <ul className="mt-6 space-y-3">
-        {groups.map((g) => (
-          <li
-            key={g.id}
-            className="rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3"
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="font-medium">{g.name}</p>
-                <p className="text-sm text-zinc-500">
-                  {g.strategy} · timeout {g.ringTimeout}s · sync {g.syncStatus}
-                </p>
-              </div>
-              <p className="text-sm text-zinc-400">
-                {g.members.map((m) => m.extension.number).join(', ') || 'No members'}
-              </p>
-            </div>
-          </li>
+      <PageHeader
+        title="Ring groups"
+        description="Simultaneous / hunt ringing across extensions."
+      />
+      <DataTable
+        columns={['Name', 'Strategy', 'Members', 'Sync']}
+        emptyTitle="No ring groups"
+        rows={groups.map((g) => (
+          <tr key={g.id}>
+            <td style={{ fontWeight: 520 }}>{g.name}</td>
+            <td className="mono">
+              {g.strategy} · {g.ringTimeout}s
+            </td>
+            <td className="mono">
+              {g.members.map((m) => m.extension.number).join(', ') || '—'}
+            </td>
+            <td>
+              <span className="badge">{g.syncStatus}</span>
+            </td>
+          </tr>
         ))}
-      </ul>
+      />
     </PortalShell>
   );
 }

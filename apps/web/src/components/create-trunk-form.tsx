@@ -41,7 +41,7 @@ export function CreateTrunkForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="panel mt-6 grid gap-3 p-4 sm:grid-cols-2">
+    <form onSubmit={onSubmit} className="form-panel">
       <div className="field">
         <label htmlFor="trunk-name">Trunk name</label>
         <input
@@ -55,7 +55,7 @@ export function CreateTrunkForm() {
         <label htmlFor="ip-acl">IP ACL</label>
         <input
           id="ip-acl"
-          placeholder="Comma-separated, optional"
+          placeholder="Optional"
           value={ipAcl}
           onChange={(e) => setIpAcl(e.target.value)}
         />
@@ -76,11 +76,13 @@ export function CreateTrunkForm() {
           onChange={(e) => setMaxCps(e.target.value)}
         />
       </div>
-      <button type="submit" disabled={loading} className="btn-primary sm:col-span-2">
-        {loading ? 'Creating…' : 'Create SIP trunk'}
+      <button type="submit" disabled={loading} className="btn btn-primary">
+        {loading ? 'Creating…' : 'Create trunk'}
       </button>
       {error ? (
-        <p className="sm:col-span-2 text-sm text-[var(--danger)]">{error}</p>
+        <p style={{ gridColumn: '1 / -1', margin: 0, color: 'var(--danger)' }}>
+          {error}
+        </p>
       ) : null}
     </form>
   );

@@ -44,9 +44,9 @@ export function CreateDidForm({
   }
 
   return (
-    <form onSubmit={onSubmit} className="panel mt-6 grid gap-3 p-4 sm:grid-cols-2">
+    <form onSubmit={onSubmit} className="form-panel">
       <div className="field">
-        <label htmlFor="did-number">DID number</label>
+        <label htmlFor="did-number">DID</label>
         <input
           id="did-number"
           placeholder="+1555…"
@@ -64,7 +64,7 @@ export function CreateDidForm({
         />
       </div>
       <div className="field">
-        <label htmlFor="did-dest">Route to extension</label>
+        <label htmlFor="did-dest">Extension</label>
         <select
           id="did-dest"
           value={destinationRef}
@@ -79,17 +79,17 @@ export function CreateDidForm({
           ))}
         </select>
       </div>
-      <div className="flex items-end">
-        <button
-          type="submit"
-          disabled={loading || extensions.length === 0}
-          className="btn-primary w-full"
-        >
-          {loading ? 'Adding…' : 'Add DID → extension'}
-        </button>
-      </div>
+      <button
+        type="submit"
+        disabled={loading || extensions.length === 0}
+        className="btn btn-primary"
+      >
+        {loading ? 'Adding…' : 'Add DID'}
+      </button>
       {error ? (
-        <p className="sm:col-span-2 text-sm text-[var(--danger)]">{error}</p>
+        <p style={{ gridColumn: '1 / -1', margin: 0, color: 'var(--danger)' }}>
+          {error}
+        </p>
       ) : null}
     </form>
   );

@@ -1,15 +1,32 @@
+import Link from 'next/link';
 import { PortalShell } from '@/components/portal-shell';
+import { PageHeader } from '@/components/ui/page-header';
 import { CreateTrunkForm } from '@/components/create-trunk-form';
+import { DataTable } from '@/components/ui/data-table';
+import {
+  AlertItem,
+  NocGrid,
+  NocWidget,
+  StatusChip,
+} from '@/components/ui/noc-widgets';
 import { apiFetch, serverCookieHeader } from '@/lib/api';
 import { getPortalShell, requireUser } from '@/lib/session';
 import { UserRole } from '@iswitch/shared';
-import Link from 'next/link';
+
+type Trunk = {
+  id: string;
+  name: string;
+  maxChannels: number;
+  maxCps: number;
+  syncStatus: string;
+  enabled: boolean;
+};
 
 export default async function WholesalePortalPage() {
   await requireUser(UserRole.WHOLESALE_CUSTOMER);
   const shell = await getPortalShell();
   const cookieHeader = await serverCookieHeader();
-  const [billing, trunks] = await Promise.all([
+  const [billing, trunks, summary] = await Promise.all([
     apiFetch<{
       name: string;
       billingMode: string;
@@ -18,53 +35,111 @@ export default async function WholesalePortalPage() {
       maxChannels: number;
       maxCps: number;
     }>('/wholesale/billing', { cookieHeader }),
-    apiFetch<unknown[]>('/wholesale/trunks', { cookieHeader }),
+    apiFetch<Trunk[]>('/wholesale/trunks', { cookieHeader }),
+    apiFetch<{ count: number; totalChargeUsd: string }>('/billing/summary', {
+      cookieHeader,
+    }).catch(() => ({ count: 0, totalChargeUsd: '0.0000' })),
   ]);
 
-  const balance = (Number(billing.balanceMicros) / 1_000_000).toFixed(2);
+  const balance = Number(billing.balanceMicros) / 1_000_000;
+  const balanceTone =
+    !billing.creditCheck.allowed
+      ? 'danger'
+      : balance < 10
+        ? 'warn'
+        : 'ok';
 
   return (
     <PortalShell
       user={shell.user}
       roleLabel={shell.roleLabel}
       nav={shell.nav}
-      title="Wholesale"
+      title="NOC dashboard"
     >
-      <h2 className="text-xl font-semibold">{billing.name}</h2>
-      <p className="mt-2 text-sm text-zinc-400">
-        SIP trunking with channel/CPS limits and prepaid credit cut-off.
-      </p>
-      <div className="mt-8 grid gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-          <p className="text-sm text-zinc-400">Balance</p>
-          <p className="mt-2 text-3xl font-semibold">${balance}</p>
-          <p className="mt-1 text-xs text-zinc-500">{billing.billingMode}</p>
+      <PageHeader
+        title={billing.name}
+        description="Wholesale trunking · prepaid cut-off · capacity limits."
+        actions={
+          <Link href="/portal/wholesale/billing" className="btn btn-primary">
+            Balance
+          </Link>
+        }
+      />
+
+      {!billing.creditCheck.allowed ? (
+        <div className="alert-list" style={{ marginBottom: 16 }}>
+          <AlertItem
+            title="Calls blocked — credit cut-off"
+            description={billing.creditCheck.reason ?? 'Insufficient balance'}
+            tone="danger"
+          />
         </div>
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
-          <p className="text-sm text-zinc-400">Credit check</p>
-          <p
-            className={`mt-2 text-xl font-semibold ${
-              billing.creditCheck.allowed ? 'text-emerald-400' : 'text-rose-400'
-            }`}
-          >
-            {billing.creditCheck.allowed ? 'Allowed' : 'Blocked'}
-          </p>
-          <p className="mt-1 text-xs text-zinc-500">
-            {billing.creditCheck.reason ?? 'OK to place calls'}
-          </p>
+      ) : balance < 10 ? (
+        <div className="alert-list" style={{ marginBottom: 16 }}>
+          <AlertItem
+            title="Balance running low"
+            description={`$${balance.toFixed(2)} remaining on ${billing.billingMode}`}
+            tone="warn"
+          />
         </div>
-        <Link
-          href="/portal/wholesale/trunks"
-          className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 hover:border-zinc-600"
-        >
-          <p className="text-sm text-zinc-400">SIP trunks</p>
-          <p className="mt-2 text-3xl font-semibold">{trunks.length}</p>
-          <p className="mt-1 text-xs text-zinc-500">
-            Cap {billing.maxChannels} ch / {billing.maxCps} CPS
-          </p>
-        </Link>
-      </div>
+      ) : null}
+
+      <NocGrid>
+        <NocWidget
+          label="Balance alert"
+          value={`$${balance.toFixed(2)}`}
+          tone={balanceTone}
+          span={4}
+          meta={
+            <div className="status-row">
+              <StatusChip
+                label={billing.creditCheck.allowed ? 'Credit OK' : 'Cut-off'}
+                tone={billing.creditCheck.allowed ? 'ok' : 'danger'}
+              />
+              <StatusChip label={billing.billingMode} />
+            </div>
+          }
+          href="/portal/wholesale/billing"
+        />
+        <NocWidget
+          label="CPS / channels"
+          value={`${billing.maxCps} / ${billing.maxChannels}`}
+          span={4}
+          meta="Account max CPS · max channels"
+        />
+        <NocWidget
+          label="Traffic"
+          value={`$${summary.totalChargeUsd}`}
+          span={4}
+          meta={`${summary.count} CDRs`}
+          href="/portal/wholesale/cdrs"
+          actionLabel="CDRs"
+        />
+      </NocGrid>
+
+      <PageHeader title="SIP trunks" />
       <CreateTrunkForm />
+      <DataTable
+        columns={['Name', 'Capacity', 'Sync', 'Enabled']}
+        emptyTitle="No trunks"
+        emptyDescription="Create a customer SIP trunk to start terminating."
+        rows={trunks.map((t) => (
+          <tr key={t.id}>
+            <td style={{ fontWeight: 600 }}>{t.name}</td>
+            <td className="mono">
+              {t.maxChannels} ch / {t.maxCps} cps
+            </td>
+            <td>
+              <span className="badge">{t.syncStatus}</span>
+            </td>
+            <td>
+              <span className={`badge${t.enabled ? ' ok' : ' warn'}`}>
+                {t.enabled ? 'on' : 'off'}
+              </span>
+            </td>
+          </tr>
+        ))}
+      />
     </PortalShell>
   );
 }

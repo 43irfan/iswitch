@@ -1,4 +1,6 @@
 import { PortalShell } from '@/components/portal-shell';
+import { PageHeader } from '@/components/ui/page-header';
+import { KpiStrip } from '@/components/ui/kpi-strip';
 import { apiFetch, serverCookieHeader } from '@/lib/api';
 import { getPortalShell, requireUser } from '@/lib/session';
 import { UserRole } from '@iswitch/shared';
@@ -25,45 +27,34 @@ export default async function WholesaleBillingPage() {
       nav={shell.nav}
       title="Balance"
     >
-      <h2 className="text-xl font-semibold">Account balance & credit</h2>
-      <p className="mt-2 text-sm text-zinc-400">
-        Prepaid cut-off uses integer micros (no floating-point money).
-      </p>
-      <dl className="mt-6 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-          <dt className="text-xs text-zinc-500">Balance</dt>
-          <dd className="mt-1 text-2xl font-semibold">
-            ${(Number(billing.balanceMicros) / 1_000_000).toFixed(2)}
-          </dd>
-        </div>
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-          <dt className="text-xs text-zinc-500">Credit limit</dt>
-          <dd className="mt-1 text-2xl font-semibold">
-            ${(Number(billing.creditLimitMicros) / 1_000_000).toFixed(2)}
-          </dd>
-        </div>
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-          <dt className="text-xs text-zinc-500">Mode / capacity</dt>
-          <dd className="mt-1 text-sm text-zinc-300">
-            {billing.billingMode} · {billing.maxChannels} channels ·{' '}
-            {billing.maxCps} CPS
-            {billing.techPrefix ? ` · tech ${billing.techPrefix}` : ''}
-          </dd>
-        </div>
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
-          <dt className="text-xs text-zinc-500">Credit check</dt>
-          <dd
-            className={`mt-1 text-lg font-semibold ${
-              billing.creditCheck.allowed ? 'text-emerald-400' : 'text-rose-400'
-            }`}
-          >
-            {billing.creditCheck.allowed ? 'Calls allowed' : 'Calls blocked'}
-          </dd>
-          <p className="mt-1 text-xs text-zinc-500">
-            {billing.creditCheck.reason ?? 'Balance OK'}
-          </p>
-        </div>
-      </dl>
+      <PageHeader
+        title="Balance & credit"
+        description="Prepaid cut-off uses integer micros (no floating-point money)."
+      />
+      <KpiStrip
+        items={[
+          {
+            label: 'Balance',
+            value: `$${(Number(billing.balanceMicros) / 1_000_000).toFixed(2)}`,
+            hero: true,
+            hint: billing.billingMode,
+          },
+          {
+            label: 'Credit limit',
+            value: `$${(Number(billing.creditLimitMicros) / 1_000_000).toFixed(2)}`,
+          },
+          {
+            label: 'Capacity',
+            value: `${billing.maxChannels}/${billing.maxCps}`,
+            hint: 'channels / CPS',
+          },
+          {
+            label: 'Credit check',
+            value: billing.creditCheck.allowed ? 'OK' : 'Blocked',
+            hint: billing.creditCheck.reason ?? 'Balance OK',
+          },
+        ]}
+      />
     </PortalShell>
   );
 }

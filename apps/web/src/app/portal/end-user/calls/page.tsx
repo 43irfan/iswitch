@@ -1,4 +1,6 @@
 import { PortalShell } from '@/components/portal-shell';
+import { PageHeader } from '@/components/ui/page-header';
+import { DataTable } from '@/components/ui/data-table';
 import { apiFetch, serverCookieHeader } from '@/lib/api';
 import { getPortalShell, requireUser } from '@/lib/session';
 import { UserRole } from '@iswitch/shared';
@@ -25,26 +27,23 @@ export default async function EndUserCallsPage() {
       nav={shell.nav}
       title="Call history"
     >
-      <h2 className="text-xl font-semibold">Your account calls</h2>
-      <ul className="mt-6 space-y-2">
-        {cdrs.map((c) => (
-          <li
-            key={c.id}
-            className="rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3 text-sm"
-          >
-            <span className="font-mono text-xs">
+      <PageHeader title="Your calls" description="Account-scoped CDR history." />
+      <DataTable
+        columns={['Caller → Callee', 'Duration', 'Disposition', 'Charge']}
+        emptyTitle="No calls yet"
+        rows={cdrs.map((c) => (
+          <tr key={c.id}>
+            <td className="mono">
               {c.caller} → {c.callee}
-            </span>
-            <span className="ml-2 text-zinc-500">
-              {c.billsec}s · {c.disposition ?? '—'} · $
-              {(Number(c.chargeMicros) / 1_000_000).toFixed(4)}
-            </span>
-          </li>
+            </td>
+            <td className="mono">{c.billsec}s</td>
+            <td>{c.disposition ?? '—'}</td>
+            <td className="mono">
+              ${(Number(c.chargeMicros) / 1_000_000).toFixed(4)}
+            </td>
+          </tr>
         ))}
-        {cdrs.length === 0 ? (
-          <li className="text-sm text-zinc-500">No calls yet.</li>
-        ) : null}
-      </ul>
+      />
     </PortalShell>
   );
 }

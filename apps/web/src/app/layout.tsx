@@ -1,28 +1,21 @@
 import type { Metadata } from 'next';
-import { JetBrains_Mono, Manrope, Syne } from 'next/font/google';
+import { Geist, Geist_Mono } from 'next/font/google';
+import { ThemeProvider } from '@/components/theme-provider';
 import './globals.css';
 
-const syne = Syne({
-  variable: '--font-syne',
+const geistSans = Geist({
+  variable: '--font-geist-sans',
   subsets: ['latin'],
-  weight: ['500', '600', '700', '800'],
 });
 
-const manrope = Manrope({
-  variable: '--font-manrope',
+const geistMono = Geist_Mono({
+  variable: '--font-geist-mono',
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-});
-
-const jetbrains = JetBrains_Mono({
-  variable: '--font-jetbrains',
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
 });
 
 export const metadata: Metadata = {
   title: 'iSwitch',
-  description: 'Class 5 softswitch — retail PBX + wholesale SIP on one control plane',
+  description: 'Class 5 softswitch NOC — retail PBX + wholesale SIP',
 };
 
 export default function RootLayout({
@@ -31,11 +24,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${syne.variable} ${manrope.variable} ${jetbrains.variable} antialiased`}
-      >
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var m=localStorage.getItem('iswitch-theme')||'system';var d=m==='dark'||(m==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');}catch(e){}})();`,
+          }}
+        />
+      </head>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

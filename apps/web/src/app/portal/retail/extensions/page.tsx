@@ -1,5 +1,7 @@
 import { PortalShell } from '@/components/portal-shell';
 import { CreateExtensionForm } from '@/components/create-extension-form';
+import { PageHeader } from '@/components/ui/page-header';
+import { DataTable } from '@/components/ui/data-table';
 import { apiFetch, serverCookieHeader } from '@/lib/api';
 import { getPortalShell, requireUser } from '@/lib/session';
 import { UserRole } from '@iswitch/shared';
@@ -10,10 +12,8 @@ type ExtensionRow = {
   displayName: string | null;
   sipUsername: string;
   sipPassword: string;
-  callerId: string | null;
   dnd: boolean;
   syncStatus: string;
-  user?: { email: string } | null;
 };
 
 export default async function RetailExtensionsPage() {
@@ -31,40 +31,32 @@ export default async function RetailExtensionsPage() {
       nav={shell.nav}
       title="Extensions"
     >
-      <h2 className="text-xl font-semibold">Extensions</h2>
-      <p className="mt-2 text-sm text-zinc-400">
-        PJSIP endpoints stored in App DB and queued for Asterisk sync.
-      </p>
+      <PageHeader
+        title="Extensions"
+        description="PJSIP endpoints in App DB · queued for Asterisk sync."
+      />
       <CreateExtensionForm />
-      <div className="mt-8 overflow-hidden rounded-xl border border-zinc-800">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-zinc-900 text-zinc-400">
-            <tr>
-              <th className="px-4 py-3">Ext</th>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">SIP user</th>
-              <th className="px-4 py-3">Password</th>
-              <th className="px-4 py-3">Sync</th>
-            </tr>
-          </thead>
-          <tbody>
-            {extensions.map((ext) => (
-              <tr key={ext.id} className="border-t border-zinc-800">
-                <td className="px-4 py-3 font-medium">{ext.number}</td>
-                <td className="px-4 py-3 text-zinc-400">
-                  {ext.displayName ?? '—'}
-                  {ext.dnd ? ' · DND' : ''}
-                </td>
-                <td className="px-4 py-3 font-mono text-xs">{ext.sipUsername}</td>
-                <td className="px-4 py-3 font-mono text-xs text-zinc-500">
-                  {ext.sipPassword}
-                </td>
-                <td className="px-4 py-3 text-zinc-400">{ext.syncStatus}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <DataTable
+        columns={['Ext', 'Name', 'SIP user', 'Password', 'Sync']}
+        emptyTitle="No extensions"
+        emptyDescription="Add an extension to provision SIP credentials."
+        rows={extensions.map((ext) => (
+          <tr key={ext.id}>
+            <td className="mono" style={{ fontWeight: 520 }}>
+              {ext.number}
+            </td>
+            <td>
+              {ext.displayName ?? '—'}
+              {ext.dnd ? ' · DND' : ''}
+            </td>
+            <td className="mono">{ext.sipUsername}</td>
+            <td className="mono faint">{ext.sipPassword}</td>
+            <td>
+              <span className="badge">{ext.syncStatus}</span>
+            </td>
+          </tr>
+        ))}
+      />
     </PortalShell>
   );
 }

@@ -18,10 +18,7 @@ export function CreateBlockForm() {
       const res = await fetch('/api/ops/fraud/blocks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prefix,
-          reason: reason || undefined,
-        }),
+        body: JSON.stringify({ prefix, reason: reason || undefined }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message ?? 'Failed to create block');
@@ -36,15 +33,15 @@ export function CreateBlockForm() {
   }
 
   return (
-    <form onSubmit={onSubmit} className="panel mt-4 grid gap-3 p-4 sm:grid-cols-2">
+    <form onSubmit={onSubmit} className="form-panel">
       <div className="field">
         <label htmlFor="prefix">Prefix</label>
         <input
           id="prefix"
-          placeholder="e.g. 1900"
+          className="mono"
+          placeholder="1900"
           value={prefix}
           onChange={(e) => setPrefix(e.target.value)}
-          className="mono"
           required
         />
       </div>
@@ -57,15 +54,13 @@ export function CreateBlockForm() {
           onChange={(e) => setReason(e.target.value)}
         />
       </div>
-      <button
-        type="submit"
-        disabled={loading}
-        className="btn-primary sm:col-span-2"
-      >
-        {loading ? 'Adding…' : 'Add destination block'}
+      <button type="submit" disabled={loading} className="btn btn-primary">
+        {loading ? 'Adding…' : 'Add block'}
       </button>
       {error ? (
-        <p className="sm:col-span-2 text-sm text-[var(--danger)]">{error}</p>
+        <p style={{ gridColumn: '1 / -1', margin: 0, color: 'var(--danger)' }}>
+          {error}
+        </p>
       ) : null}
     </form>
   );

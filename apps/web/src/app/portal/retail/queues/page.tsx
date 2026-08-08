@@ -1,4 +1,6 @@
 import { PortalShell } from '@/components/portal-shell';
+import { PageHeader } from '@/components/ui/page-header';
+import { DataTable } from '@/components/ui/data-table';
 import { apiFetch, serverCookieHeader } from '@/lib/api';
 import { getPortalShell, requireUser } from '@/lib/session';
 import { UserRole } from '@iswitch/shared';
@@ -27,30 +29,31 @@ export default async function RetailQueuesPage() {
       nav={shell.nav}
       title="Queues"
     >
-      <h2 className="text-xl font-semibold">Call queues</h2>
-      <p className="mt-2 text-sm text-zinc-400">
-        Basic ACD queues with MoH and member extensions.
-      </p>
-      <ul className="mt-6 space-y-3">
-        {queues.map((q) => (
-          <li
-            key={q.id}
-            className="rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3"
-          >
-            <p className="font-medium">
+      <PageHeader
+        title="Call queues"
+        description="Basic ACD queues with MoH and member extensions."
+      />
+      <DataTable
+        columns={['Name', 'Strategy', 'Agents', 'Sync']}
+        emptyTitle="No queues"
+        rows={queues.map((q) => (
+          <tr key={q.id}>
+            <td style={{ fontWeight: 520 }}>
               {q.name}
               {q.extension ? ` (ext ${q.extension})` : ''}
-            </p>
-            <p className="text-sm text-zinc-500">
-              {q.strategy} · timeout {q.timeout}s · MoH {q.musicOnHold} ·{' '}
-              {q.syncStatus}
-            </p>
-            <p className="mt-1 text-sm text-zinc-400">
-              Agents: {q.members.map((m) => m.extension.number).join(', ') || 'none'}
-            </p>
-          </li>
+            </td>
+            <td className="mono">
+              {q.strategy} · {q.timeout}s · {q.musicOnHold}
+            </td>
+            <td className="mono">
+              {q.members.map((m) => m.extension.number).join(', ') || '—'}
+            </td>
+            <td>
+              <span className="badge">{q.syncStatus}</span>
+            </td>
+          </tr>
         ))}
-      </ul>
+      />
     </PortalShell>
   );
 }

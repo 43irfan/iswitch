@@ -1,7 +1,10 @@
 import { PortalShell } from '@/components/portal-shell';
+import { PageHeader } from '@/components/ui/page-header';
+import { KpiStrip } from '@/components/ui/kpi-strip';
 import { apiFetch, serverCookieHeader } from '@/lib/api';
 import { getPortalShell, requireUser } from '@/lib/session';
 import { UserRole } from '@iswitch/shared';
+import { EmptyState } from '@/components/ui/empty-state';
 
 type Extension = {
   id: string;
@@ -31,35 +34,43 @@ export default async function EndUserPortalPage() {
       nav={shell.nav}
       title="My phone"
     >
-      <h2 className="text-xl font-semibold">Self-care</h2>
-      <p className="mt-2 text-sm text-zinc-400">
-        Your assigned extension credentials for softphone / desk phone.
-      </p>
+      <PageHeader
+        title="Self-care"
+        description="Softphone / desk phone credentials for your extension."
+      />
       {mine ? (
-        <div className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 text-sm">
-          <p>
-            <span className="text-zinc-500">Extension</span>{' '}
-            <span className="font-medium">{mine.number}</span>
-            {mine.displayName ? ` — ${mine.displayName}` : ''}
-          </p>
-          <p className="mt-2">
-            <span className="text-zinc-500">SIP username</span>{' '}
-            <code className="text-emerald-400">{mine.sipUsername}</code>
-          </p>
-          <p className="mt-2">
-            <span className="text-zinc-500">SIP password</span>{' '}
-            <code className="text-emerald-400">{mine.sipPassword}</code>
-          </p>
-          <p className="mt-2 text-zinc-400">
-            Caller ID: {mine.callerId ?? '—'} · DND: {mine.dnd ? 'on' : 'off'} ·
-            Forward: {mine.forwardTo ?? '—'} · Voicemail:{' '}
-            {mine.voicemailEnabled ? 'on' : 'off'}
-          </p>
-        </div>
+        <>
+          <KpiStrip
+            items={[
+              { label: 'Extension', value: mine.number, hero: true },
+              { label: 'DND', value: mine.dnd ? 'On' : 'Off' },
+              { label: 'Voicemail', value: mine.voicemailEnabled ? 'On' : 'Off' },
+              { label: 'Forward', value: mine.forwardTo ?? '—' },
+            ]}
+          />
+          <div className="panel panel-pad">
+            <p className="muted" style={{ margin: '0 0 8px', fontSize: 12 }}>
+              SIP credentials
+            </p>
+            <p style={{ margin: '0 0 6px' }}>
+              <span className="faint">Username </span>
+              <span className="mono">{mine.sipUsername}</span>
+            </p>
+            <p style={{ margin: 0 }}>
+              <span className="faint">Password </span>
+              <span className="mono">{mine.sipPassword}</span>
+            </p>
+            <p className="muted" style={{ margin: '10px 0 0', fontSize: 12 }}>
+              Caller ID: {mine.callerId ?? '—'}
+              {mine.displayName ? ` · ${mine.displayName}` : ''}
+            </p>
+          </div>
+        </>
       ) : (
-        <p className="mt-6 text-sm text-amber-400">
-          No extension is linked to your user yet.
-        </p>
+        <EmptyState
+          title="No extension linked"
+          description="Ask your admin to assign an extension to your user."
+        />
       )}
     </PortalShell>
   );

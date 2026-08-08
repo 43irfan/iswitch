@@ -1,4 +1,6 @@
 import { PortalShell } from '@/components/portal-shell';
+import { PageHeader } from '@/components/ui/page-header';
+import { DataTable } from '@/components/ui/data-table';
 import { apiFetch, serverCookieHeader } from '@/lib/api';
 import { getPortalShell, requireUser } from '@/lib/session';
 import { UserRole } from '@iswitch/shared';
@@ -25,27 +27,28 @@ export default async function RetailIvrPage() {
       nav={shell.nav}
       title="IVR"
     >
-      <h2 className="text-xl font-semibold">Auto-attendant / IVR</h2>
-      <p className="mt-2 text-sm text-zinc-400">
-        Digit menus stored in App DB; dialplan sync is queued to Asterisk.
-      </p>
-      <ul className="mt-6 space-y-3">
-        {menus.map((menu) => (
-          <li
-            key={menu.id}
-            className="rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-3"
-          >
-            <p className="font-medium">{menu.name}</p>
-            <p className="text-sm text-zinc-500">
-              Prompt {menu.greetingPrompt} · timeout {menu.timeoutSeconds}s ·{' '}
-              {menu.syncStatus}
-            </p>
-            <pre className="mt-2 overflow-auto text-xs text-zinc-400">
-              {JSON.stringify(menu.options, null, 2)}
-            </pre>
-          </li>
+      <PageHeader
+        title="Auto-attendant / IVR"
+        description="Digit menus in App DB · dialplan sync queued to Asterisk."
+      />
+      <DataTable
+        columns={['Name', 'Prompt', 'Options', 'Sync']}
+        emptyTitle="No IVR menus"
+        rows={menus.map((menu) => (
+          <tr key={menu.id}>
+            <td style={{ fontWeight: 520 }}>{menu.name}</td>
+            <td className="mono">
+              {menu.greetingPrompt} · {menu.timeoutSeconds}s
+            </td>
+            <td className="mono faint">
+              {Object.keys(menu.options ?? {}).join(', ') || '—'}
+            </td>
+            <td>
+              <span className="badge">{menu.syncStatus}</span>
+            </td>
+          </tr>
         ))}
-      </ul>
+      />
     </PortalShell>
   );
 }
