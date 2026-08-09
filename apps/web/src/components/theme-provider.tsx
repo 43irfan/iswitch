@@ -8,6 +8,7 @@ import {
   useMemo,
   useState,
 } from 'react';
+import { Laptop, Moon, Sun } from 'lucide-react';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 
@@ -99,7 +100,8 @@ export function ThemeSwitch() {
           className={mode === opt ? 'active' : ''}
           onClick={() => setMode(opt)}
         >
-          {opt === 'system' ? 'Auto' : opt[0].toUpperCase() + opt.slice(1)}
+          {opt === 'light' ? <Sun size={14} /> : opt === 'dark' ? <Moon size={14} /> : <Laptop size={14} />}
+          <span>{opt === 'system' ? 'Auto' : opt[0].toUpperCase() + opt.slice(1)}</span>
         </button>
       ))}
     </div>

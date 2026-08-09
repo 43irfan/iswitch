@@ -3,50 +3,39 @@ import { LoginForm } from '@/components/login-form';
 import { ThemeSwitch } from '@/components/theme-provider';
 import { getSessionUser } from '@/lib/session';
 import { redirect } from 'next/navigation';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Activity, CheckCircle2, LockKeyhole, RadioTower, ShieldCheck } from 'lucide-react';
 
 export default async function LoginPage() {
   const user = await getSessionUser();
   if (user) redirect(ROLE_PORTAL_PATH[user.role]);
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center bg-background p-6">
-      <div className="absolute top-4 right-4">
-        <ThemeSwitch />
-      </div>
-      <Card className="w-full max-w-md">
+    <main className="login-stage">
+      <div className="login-theme"><ThemeSwitch /></div>
+      <section className="login-context">
+        <div className="landing-logo"><span><Activity size={17} /></span>{APP_NAME}<small>Signal OS</small></div>
+        <div>
+          <div className="eyebrow"><RadioTower size={14} /> Secure operator access</div>
+          <h1>Your network never sleeps.<br /><em>Neither does Signal.</em></h1>
+          <p>Monitor calls, route traffic, protect margins, and resolve incidents from one role-aware command center.</p>
+        </div>
+        <div className="login-assurances"><span><CheckCircle2 /> Encrypted sessions</span><span><ShieldCheck /> Scoped access control</span><span><LockKeyhole /> Audited operations</span></div>
+      </section>
+      <Card className="login-card">
         <CardHeader>
-          <p className="text-sm font-semibold tracking-tight">
-            {APP_NAME}{' '}
-            <span className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
-              NOC
-            </span>
-          </p>
-          <CardTitle>Operator sign-in</CardTitle>
-          <CardDescription>
-            Role-scoped portals · session cookie auth
-          </CardDescription>
+          <p className="login-card-kicker">CONTROL PLANE ACCESS</p>
+          <CardTitle>Welcome back</CardTitle>
+          <CardDescription>Sign in to your secure iSwitch workspace.</CardDescription>
         </CardHeader>
         <CardContent>
           <LoginForm />
-          <div className="mt-5 border-t pt-4">
-            <p className="text-[11px] font-bold tracking-wider text-muted-foreground uppercase">
-              Demo accounts
-            </p>
-            <ul className="mt-2 space-y-1 font-mono text-xs text-muted-foreground">
-              <li>admin@iswitch.local</li>
-              <li>reseller@iswitch.local</li>
-              <li>retail@iswitch.local</li>
-              <li>wholesale@iswitch.local</li>
-              <li>user@iswitch.local</li>
+          <details className="demo-accounts">
+            <summary>View demo accounts</summary>
+            <ul>
+              <li>admin@iswitch.local</li><li>reseller@iswitch.local</li><li>retail@iswitch.local</li><li>wholesale@iswitch.local</li><li>user@iswitch.local</li>
             </ul>
-          </div>
+          </details>
         </CardContent>
       </Card>
     </main>

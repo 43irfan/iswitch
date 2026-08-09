@@ -53,7 +53,7 @@ export class AuthController {
         action: 'auth.login.success',
         ip: req.ip,
       });
-      return { user, sessionToken: token };
+      return { user };
     } catch (err) {
       await this.audit.log({
         actorEmail: parsed.data.email.toLowerCase(),

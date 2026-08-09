@@ -1,45 +1,76 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { canPlaceCall } from '@iswitch/shared';
+import { canPlaceCall, type SessionUser, UserRole } from '@iswitch/shared';
 import { PrismaService } from '../prisma/prisma.service';
+import { TenancyService } from '../tenancy/tenancy.service';
 
 @Injectable()
 export class FraudService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly tenancy: TenancyService,
+  ) {}
 
-  async listBlocks(accountId?: string | null) {
+  async listBlocks(user: SessionUser, accountId?: string | null) {
+    if (accountId) {
+      await this.tenancy.assertCanAccessAccount(user, accountId);
+    }
+
+    const accessibleIds = await this.tenancy.getAccessibleAccountIds(user);
     return this.prisma.destinationBlock.findMany({
       where: accountId
         ? { OR: [{ accountId }, { accountId: '' }] }
-        : undefined,
+        : user.role === UserRole.SUPER_ADMIN
+          ? undefined
+          : { OR: [{ accountId: { in: accessibleIds } }, { accountId: '' }] },
       orderBy: [{ prefix: 'asc' }],
     });
   }
 
-  async createBlock(input: {
-    accountId?: string | null;
-    prefix: string;
-    reason?: string;
-  }) {
+  async createBlock(
+    user: SessionUser,
+    input: {
+      accountId?: string | null;
+      prefix: string;
+      reason?: string;
+    },
+  ) {
     const prefix = input.prefix.replace(/\D/g, '');
     if (!prefix) throw new BadRequestException('prefix required');
+
+    const accountId =
+      input.accountId ??
+      (user.role === UserRole.SUPER_ADMIN ? '' : user.accountId);
+    if (accountId) {
+      await this.tenancy.assertCanAccessAccount(user, accountId);
+    } else if (user.role !== UserRole.SUPER_ADMIN) {
+      throw new ForbiddenException('Only super admins can create global blocks');
+    }
+
     return this.prisma.destinationBlock.create({
       data: {
-        accountId: input.accountId ?? '',
+        accountId,
         prefix,
         reason: input.reason,
       },
     });
   }
 
-  async removeBlock(id: string) {
+  async removeBlock(user: SessionUser, id: string) {
     const existing = await this.prisma.destinationBlock.findUnique({
       where: { id },
     });
     if (!existing) throw new NotFoundException('Block not found');
+    if (!existing.accountId && user.role !== UserRole.SUPER_ADMIN) {
+      throw new ForbiddenException('Only super admins can delete global blocks');
+    }
+    if (existing.accountId) {
+      await this.tenancy.assertCanAccessAccount(user, existing.accountId);
+    }
     await this.prisma.destinationBlock.delete({ where: { id } });
     return { ok: true };
   }
@@ -59,11 +90,15 @@ export class FraudService {
   /**
    * Pre-call gate: account status, credit, destination blocks, soft channel cap.
    */
-  async checkCall(input: {
-    accountId: string;
-    destination: string;
-    activeChannels?: number;
-  }) {
+  async checkCall(
+    user: SessionUser,
+    input: {
+      accountId: string;
+      destination: string;
+      activeChannels?: number;
+    },
+  ) {
+    await this.tenancy.assertCanAccessAccount(user, input.accountId);
     const account = await this.prisma.account.findUnique({
       where: { id: input.accountId },
     });

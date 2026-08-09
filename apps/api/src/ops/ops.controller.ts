@@ -62,8 +62,11 @@ export class OpsController {
 
   @Roles(UserRole.SUPER_ADMIN, UserRole.RESELLER)
   @Get('fraud/blocks')
-  listBlocks(@Query('accountId') accountId?: string) {
-    return this.fraud.listBlocks(accountId);
+  listBlocks(
+    @CurrentUser() user: SessionUser,
+    @Query('accountId') accountId?: string,
+  ) {
+    return this.fraud.listBlocks(user, accountId);
   }
 
   @Roles(UserRole.SUPER_ADMIN, UserRole.RESELLER)
@@ -75,7 +78,7 @@ export class OpsController {
   ) {
     const parsed = blockSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException(parsed.error.message);
-    const block = await this.fraud.createBlock(parsed.data);
+    const block = await this.fraud.createBlock(user, parsed.data);
     await this.audit.log({
       actorUserId: user.id,
       actorEmail: user.email,
@@ -95,7 +98,7 @@ export class OpsController {
     @Param('id') id: string,
     @Req() req: Request,
   ) {
-    const result = await this.fraud.removeBlock(id);
+    const result = await this.fraud.removeBlock(user, id);
     await this.audit.log({
       actorUserId: user.id,
       actorEmail: user.email,
@@ -114,10 +117,10 @@ export class OpsController {
     UserRole.RETAIL_CUSTOMER_ADMIN,
   )
   @Post('fraud/check')
-  check(@Body() body: unknown) {
+  check(@CurrentUser() user: SessionUser, @Body() body: unknown) {
     const parsed = checkSchema.safeParse(body);
     if (!parsed.success) throw new BadRequestException(parsed.error.message);
-    return this.fraud.checkCall(parsed.data);
+    return this.fraud.checkCall(user, parsed.data);
   }
 
   @Roles(UserRole.SUPER_ADMIN)

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { resolve } from 'path';
 import { APP_GUARD } from '@nestjs/core';
 import { BullModule } from '@nestjs/bullmq';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
@@ -19,7 +20,29 @@ import { OpsModule } from './ops/ops.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      // Support both package-local execution and monorepo-root configuration.
+      // The package-local file wins when both exist.
+      envFilePath: [
+        resolve(__dirname, '../.env'),
+        resolve(__dirname, '../../../.env'),
+      ],
+      validate: (env: Record<string, unknown>) => {
+        const token = env.CDR_INGEST_TOKEN;
+        if (
+          env.NODE_ENV === 'production' &&
+          (typeof token !== 'string' ||
+            token.length < 32 ||
+            token === 'dev-cdr-token')
+        ) {
+          throw new Error(
+            'CDR_INGEST_TOKEN must be a unique secret of at least 32 characters in production',
+          );
+        }
+        return env;
+      },
+    }),
     ThrottlerModule.forRoot([
       {
         name: 'default',

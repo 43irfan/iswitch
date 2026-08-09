@@ -16,8 +16,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'iSwitch',
-  description: 'Class 5 softswitch NOC — retail PBX + wholesale SIP',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
+  title: 'iSwitch Signal — Telecom Control Plane',
+  description: 'Carrier-grade control plane for retail PBX, wholesale SIP, routing, billing, and live network operations.',
+  openGraph: {
+    title: 'iSwitch Signal — Telecom Control Plane',
+    description: 'Every call. Under control.',
+    images: [{ url: '/og.png', width: 1536, height: 864 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'iSwitch Signal — Telecom Control Plane',
+    description: 'Every call. Under control.',
+    images: ['/og.png'],
+  },
 };
 
 export default function RootLayout({

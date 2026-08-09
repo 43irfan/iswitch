@@ -2,6 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useMemo, useState } from 'react';
+import {
+  Activity, BadgeDollarSign, Bell, Building2, ChevronRight, CircleGauge,
+  GitBranch, Headphones, LogOut, Menu, Network, PhoneCall, RadioTower,
+  Search, ServerCog, Users, X,
+} from 'lucide-react';
 import { APP_NAME, ROLE_LABEL, type SessionUser } from '@iswitch/shared';
 import { ThemeSwitch } from '@/components/theme-provider';
 
@@ -40,6 +46,21 @@ function groupFor(item: NavItem): string {
 
 const GROUP_ORDER = ['Management', 'Routing', 'Finance', 'System'];
 
+function NavIcon({ item }: { item: NavItem }) {
+  const key = `${item.href} ${item.label}`.toLowerCase();
+  const Icon = key.includes('dashboard') ? CircleGauge
+    : key.includes('extension') ? PhoneCall
+    : key.includes('did') ? RadioTower
+    : key.includes('carrier') || key.includes('trunk') ? Network
+    : key.includes('route') ? GitBranch
+    : key.includes('cdr') || key.includes('billing') ? BadgeDollarSign
+    : key.includes('system') ? ServerCog
+    : key.includes('reseller') || key.includes('customer') ? Building2
+    : key.includes('queue') || key.includes('group') || key.includes('ivr') ? Headphones
+    : Users;
+  return <Icon aria-hidden size={16} strokeWidth={1.8} />;
+}
+
 function navActive(href: string, pathname: string) {
   if (pathname === href) return true;
   if (ROOT_HREFS.has(href)) return false;
@@ -61,12 +82,22 @@ export function PortalShell({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const role = roleLabel || ROLE_LABEL[user.role];
 
   const grouped = GROUP_ORDER.map((name) => ({
     name,
     items: nav.filter((item) => groupFor(item) === name),
   })).filter((g) => g.items.length > 0);
+
+  const filteredGroups = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return grouped;
+    return grouped
+      .map((group) => ({ ...group, items: group.items.filter((item) => item.label.toLowerCase().includes(needle)) }))
+      .filter((group) => group.items.length > 0);
+  }, [grouped, query]);
 
   async function logout() {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -76,14 +107,22 @@ export function PortalShell({
 
   return (
     <div className="app-shell">
-      <aside className="app-sidebar">
+      {mobileOpen ? <button className="nav-scrim" aria-label="Close navigation" onClick={() => setMobileOpen(false)} /> : null}
+      <aside className={`app-sidebar${mobileOpen ? ' mobile-open' : ''}`}>
         <Link href="/portal" className="sidebar-brand">
-          {APP_NAME}
-          <span className="tag">NOC</span>
+          <span className="brand-mark"><Activity size={17} strokeWidth={2.4} /></span>
+          <span className="brand-copy">{APP_NAME}<small>Signal OS</small></span>
+          <span className="brand-version">v1</span>
         </Link>
 
+        <div className="nav-search">
+          <Search size={14} aria-hidden />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a workspace…" aria-label="Find a workspace" />
+          <kbd>⌘K</kbd>
+        </div>
+
         <nav className="nav-body" aria-label="Portal">
-          {grouped.map((group) => (
+          {filteredGroups.map((group) => (
             <div key={group.name} className="nav-group">
               <div className="nav-group-label">{group.name}</div>
               {group.items.map((item) => (
@@ -91,8 +130,11 @@ export function PortalShell({
                   key={item.href}
                   href={item.href}
                   className={`nav-link${navActive(item.href, pathname) ? ' active' : ''}`}
+                  onClick={() => setMobileOpen(false)}
                 >
-                  {item.label}
+                  <NavIcon item={item} />
+                  <span>{item.label}</span>
+                  {navActive(item.href, pathname) ? <ChevronRight className="nav-chevron" size={14} /> : null}
                 </Link>
               ))}
             </div>
@@ -112,19 +154,25 @@ export function PortalShell({
             </div>
           </div>
           <button type="button" className="btn-signout" onClick={logout}>
-            Sign out
+            <LogOut size={14} /> Sign out
           </button>
         </div>
       </aside>
 
       <div className="app-main">
         <header className="app-topbar">
-          <h1>{title}</h1>
+          <div className="topbar-title">
+            <button className="mobile-menu" type="button" onClick={() => setMobileOpen((open) => !open)} aria-label="Toggle navigation">
+              {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+            <div><span>Control plane</span><h1>{title}</h1></div>
+          </div>
           <div className="topbar-right">
             <div className="live-pill">
               <span className="live-dot" aria-hidden />
-              Softswitch live
+              Network live
             </div>
+            <button className="icon-button" type="button" aria-label="Notifications"><Bell size={16} /><span className="notification-dot" /></button>
             <ThemeSwitch />
           </div>
         </header>

@@ -1,6 +1,7 @@
 import { Global, Module } from '@nestjs/common';
 import { AsteriskModule } from '../asterisk/asterisk.module';
 import { JobsModule } from '../jobs/jobs.module';
+import { AccountsModule } from '../tenancy/accounts.module';
 import { AuditService } from './audit.service';
 import { FraudService } from './fraud.service';
 import { OpsService } from './ops.service';
@@ -8,7 +9,7 @@ import { OpsController } from './ops.controller';
 
 @Global()
 @Module({
-  imports: [AsteriskModule, JobsModule],
+  imports: [AsteriskModule, JobsModule, AccountsModule],
   controllers: [OpsController],
   providers: [AuditService, FraudService, OpsService],
   exports: [AuditService, FraudService, OpsService],

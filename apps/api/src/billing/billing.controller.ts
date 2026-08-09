@@ -75,7 +75,7 @@ export class BillingController {
     @Headers('x-cdr-token') token: string | undefined,
     @Body() body: unknown,
   ) {
-    const expected = this.config.get<string>('CDR_INGEST_TOKEN') ?? 'dev-cdr-token';
+    const expected = this.config.getOrThrow<string>('CDR_INGEST_TOKEN');
     if (!token || token !== expected) {
       throw new UnauthorizedException('Invalid CDR ingest token');
     }

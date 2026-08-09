@@ -517,7 +517,7 @@ export class WholesaleBillingService {
     const billing = await this.getAccountBilling(user, accountId);
     if (!destination) return billing;
 
-    const gate = await this.fraud.checkCall({
+    const gate = await this.fraud.checkCall(user, {
       accountId: billing.id,
       destination,
     });
