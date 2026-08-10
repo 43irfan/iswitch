@@ -11,6 +11,7 @@ import {
 import { apiFetch, serverCookieHeader } from '@/lib/api';
 import { getPortalShell, requireUser } from '@/lib/session';
 import { UserRole } from '@iswitch/shared';
+import { SignalCommand } from '@/components/ui/signal-command';
 
 export default async function AdminPortalPage() {
   await requireUser(UserRole.SUPER_ADMIN);
@@ -104,6 +105,23 @@ export default async function AdminPortalPage() {
             System console
           </Link>
         }
+      />
+
+      <SignalCommand
+        eyebrow="Global control plane"
+        title={ready ? 'All systems in rhythm.' : 'Your attention is required.'}
+        description="Live infrastructure health, switching activity, and commercial traffic across the entire iSwitch network."
+        primaryLabel="Network readiness"
+        primaryValue={ready ? '99.99%' : 'Degraded'}
+        primaryDetail={ready ? 'All critical services operational' : 'One or more services need attention'}
+        healthy={ready}
+        metrics={[
+          { label: 'CUSTOMER TRUNKS', value: overview?.counts.trunks ?? '—', detail: 'Provisioned' },
+          { label: 'CDR EVENTS', value: overview?.counts.cdrs ?? summary.count, detail: 'Rated records' },
+          { label: 'ACCOUNTS', value: overview?.counts.accounts ?? '—', detail: 'Across network' },
+        ]}
+        href="/portal/admin/system"
+        actionLabel="Inspect network"
       />
 
       <NocGrid>

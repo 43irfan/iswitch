@@ -5,6 +5,7 @@ import { NocGrid, NocWidget } from '@/components/ui/noc-widgets';
 import { apiFetch, serverCookieHeader } from '@/lib/api';
 import { getPortalShell, requireUser } from '@/lib/session';
 import { UserRole } from '@iswitch/shared';
+import { SignalCommand } from '@/components/ui/signal-command';
 
 export default async function RetailPortalPage() {
   await requireUser(UserRole.RETAIL_CUSTOMER_ADMIN);
@@ -40,6 +41,22 @@ export default async function RetailPortalPage() {
             Extensions
           </Link>
         }
+      />
+      <SignalCommand
+        eyebrow="PBX signal"
+        title="Your voice workspace is ready."
+        description="A live overview of people, numbers, call flows, and customer conversations."
+        primaryLabel="PBX readiness"
+        primaryValue={account.status === 'ACTIVE' ? 'Online' : account.status}
+        primaryDetail={account.status === 'ACTIVE' ? 'Voice services operational' : 'Account requires attention'}
+        healthy={account.status === 'ACTIVE'}
+        metrics={[
+          { label: 'EXTENSIONS', value: extensions.length, detail: 'People & devices' },
+          { label: 'PHONE NUMBERS', value: dids.length, detail: 'Active DIDs' },
+          { label: 'CALL ACTIVITY', value: summary.count, detail: 'CDR records' },
+        ]}
+        href="/portal/retail/extensions"
+        actionLabel="Manage extensions"
       />
       <NocGrid>
         <NocWidget

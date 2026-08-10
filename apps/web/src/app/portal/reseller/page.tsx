@@ -6,6 +6,7 @@ import { NocGrid, NocWidget, StatusChip } from '@/components/ui/noc-widgets';
 import { apiFetch, serverCookieHeader } from '@/lib/api';
 import { getPortalShell, requireUser } from '@/lib/session';
 import { UserRole } from '@iswitch/shared';
+import { SignalCommand } from '@/components/ui/signal-command';
 
 export default async function ResellerPortalPage() {
   await requireUser(UserRole.RESELLER);
@@ -40,6 +41,22 @@ export default async function ResellerPortalPage() {
             Routes
           </Link>
         }
+      />
+      <SignalCommand
+        eyebrow="Reseller network"
+        title="Your customer network, at a glance."
+        description="Commercial activity and account health across every retail and wholesale customer in your tree."
+        primaryLabel="Customer readiness"
+        primaryValue={`${active}/${children.length}`}
+        primaryDetail={active === children.length ? 'All customer accounts active' : 'Some accounts require attention'}
+        healthy={active === children.length}
+        metrics={[
+          { label: 'RETAIL', value: retail, detail: 'PBX accounts' },
+          { label: 'WHOLESALE', value: wholesale, detail: 'SIP accounts' },
+          { label: 'TRAFFIC', value: `$${summary.totalChargeUsd}`, detail: `${summary.count} CDRs` },
+        ]}
+        href="/portal/reseller/customers"
+        actionLabel="View customers"
       />
       <NocGrid>
         <NocWidget

@@ -12,6 +12,7 @@ import {
 import { apiFetch, serverCookieHeader } from '@/lib/api';
 import { getPortalShell, requireUser } from '@/lib/session';
 import { UserRole } from '@iswitch/shared';
+import { SignalCommand } from '@/components/ui/signal-command';
 
 type Trunk = {
   id: string;
@@ -64,6 +65,23 @@ export default async function WholesalePortalPage() {
             Balance
           </Link>
         }
+      />
+
+      <SignalCommand
+        eyebrow="Wholesale signal"
+        title={billing.creditCheck.allowed ? 'Traffic is cleared to flow.' : 'Traffic cut-off is active.'}
+        description="A live commercial and capacity view of your wholesale voice operation."
+        primaryLabel="Available balance"
+        primaryValue={`$${balance.toFixed(2)}`}
+        primaryDetail={billing.creditCheck.allowed ? 'Credit gate approved' : billing.creditCheck.reason ?? 'Credit gate denied'}
+        healthy={billing.creditCheck.allowed}
+        metrics={[
+          { label: 'MAX CPS', value: billing.maxCps, detail: 'Calls / second' },
+          { label: 'CHANNELS', value: billing.maxChannels, detail: 'Concurrent' },
+          { label: 'TRUNKS', value: trunks.length, detail: `${summary.count} CDRs` },
+        ]}
+        href="/portal/wholesale/billing"
+        actionLabel="Manage balance"
       />
 
       {!billing.creditCheck.allowed ? (
